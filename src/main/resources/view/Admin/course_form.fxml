@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+
+<GridPane hgap="10.0" vgap="10.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+          fx:controller="com.example.java_lms_group_01.Controller.AdminDashboard.CourseFormController">
+    <padding>
+        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0"/>
+    </padding>
+
+    <columnConstraints>
+        <ColumnConstraints minWidth="120.0"/>
+        <ColumnConstraints minWidth="240.0"/>
+    </columnConstraints>
+
+    <Label text="Course Code" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+    <TextField fx:id="txtCourseCode" promptText="ex: CS101" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+    <Label text="Name" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+    <TextField fx:id="txtName" promptText="Course name" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+    <Label text="Credits" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+    <TextField fx:id="txtCredits" promptText="Credits" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+    <CheckBox fx:id="chkHasTheory" text="Has Theory" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+    <CheckBox fx:id="chkHasPractical" text="Has Practical" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+    <Label text="Lecturer ID" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+    <TextField fx:id="txtLecturerId" promptText="Lecturer ID" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+    <Label text="Department ID" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+    <TextField fx:id="txtDeptId" promptText="Department ID" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+
+    <Label text="Semester" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+    <TextField fx:id="txtSemester" promptText="ex: Level 1 Semester 2" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+</GridPane>

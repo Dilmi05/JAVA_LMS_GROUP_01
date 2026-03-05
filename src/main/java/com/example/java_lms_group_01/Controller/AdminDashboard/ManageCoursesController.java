@@ -2,20 +2,28 @@ package com.example.java_lms_group_01.Controller.AdminDashboard;
 
 import com.example.java_lms_group_01.model.Course;
 import com.example.java_lms_group_01.Repository.CourseRepository;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.layout.Region;
 
+import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class ManageCoursesController implements Initializable {
@@ -58,7 +66,7 @@ public class ManageCoursesController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         configureColumns();
-        loadDepartmentFilter();
+        loadDepartmentFilter("All");
         loadCourses(null, null);
 
         txtSearchCourse.textProperty().addListener((obs, oldValue, newValue) ->
@@ -81,14 +89,19 @@ public class ManageCoursesController implements Initializable {
         colSemester.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getSemester()));
     }
 
-    private void loadDepartmentFilter() {
+    private void loadDepartmentFilter(String selectedValue) {
         try {
             cmbDeptFilter.getItems().clear();
             cmbDeptFilter.getItems().add("All");
             for (Integer deptId : courseRepository.findAllDepartmentIds()) {
                 cmbDeptFilter.getItems().add(String.valueOf(deptId));
             }
-            cmbDeptFilter.setValue("All");
+
+            if (selectedValue != null && cmbDeptFilter.getItems().contains(selectedValue)) {
+                cmbDeptFilter.setValue(selectedValue);
+            } else {
+                cmbDeptFilter.setValue("All");
+            }
         } catch (SQLException e) {
             showError("Failed to load department filters.", e);
         }
@@ -114,7 +127,24 @@ public class ManageCoursesController implements Initializable {
 
     @FXML
     void btnOnActionAddNewCourse(ActionEvent event) {
-        showInfo("Add New Course is not wired to a form yet.");
+        Course course = showCourseForm(null);
+        if (course == null) {
+            return;
+        }
+
+        try {
+            boolean saved = courseRepository.save(course);
+            if (saved) {
+                String selectedDept = cmbDeptFilter.getValue();
+                loadDepartmentFilter(selectedDept);
+                applyFilters();
+                showInfo("Course added successfully.");
+            } else {
+                showInfo("No course was added.");
+            }
+        } catch (SQLException e) {
+            showError("Failed to add course.", e);
+        }
     }
 
     @FXML
@@ -125,10 +155,20 @@ public class ManageCoursesController implements Initializable {
             return;
         }
 
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmation.setHeaderText("Delete Course");
+        confirmation.setContentText("Delete course " + selectedCourse.getCourseCode() + "?");
+        Optional<ButtonType> answer = confirmation.showAndWait();
+        if (answer.isEmpty() || answer.get() != ButtonType.OK) {
+            return;
+        }
+
         try {
             boolean deleted = courseRepository.deleteByCourseCode(selectedCourse.getCourseCode());
             if (deleted) {
-                loadCourses(null, null);
+                String selectedDept = cmbDeptFilter.getValue();
+                loadDepartmentFilter(selectedDept);
+                applyFilters();
                 showInfo("Course deleted successfully.");
             } else {
                 showInfo("No course was deleted.");
@@ -140,7 +180,71 @@ public class ManageCoursesController implements Initializable {
 
     @FXML
     void btnOnActionUpdateCourse(ActionEvent event) {
-        showInfo("Update Course is not wired to an edit form yet.");
+        Course selectedCourse = tblCourses.getSelectionModel().getSelectedItem();
+        if (selectedCourse == null) {
+            showInfo("Please select a course to edit.");
+            return;
+        }
+
+        Course updatedCourse = showCourseForm(selectedCourse);
+        if (updatedCourse == null) {
+            return;
+        }
+
+        try {
+            boolean updated = courseRepository.update(updatedCourse);
+            if (updated) {
+                String selectedDept = cmbDeptFilter.getValue();
+                loadDepartmentFilter(selectedDept);
+                applyFilters();
+                showInfo("Course updated successfully.");
+            } else {
+                showInfo("No course was updated.");
+            }
+        } catch (SQLException e) {
+            showError("Failed to update course.", e);
+        }
+    }
+
+    private Course showCourseForm(Course existingCourse) {
+        boolean editMode = existingCourse != null;
+        Dialog<Course> dialog = new Dialog<>();
+        dialog.setTitle(editMode ? "Edit Course" : "Add New Course");
+        dialog.setHeaderText(editMode ? "Update selected course details." : "Enter new course details.");
+
+        ButtonType saveButtonType = new ButtonType(editMode ? "Update" : "Save", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        CourseFormController formController;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/Admin/course_form.fxml"));
+            Region formRoot = loader.load();
+            formController = loader.getController();
+            dialog.getDialogPane().setContent(formRoot);
+        } catch (IOException e) {
+            showError("Failed to open course form.", e);
+            return null;
+        }
+
+        if (editMode) {
+            formController.setupForEdit(existingCourse);
+        } else {
+            formController.setupForCreate();
+        }
+
+        Button saveButton = (Button) dialog.getDialogPane().lookupButton(saveButtonType);
+        final Course[] resultHolder = new Course[1];
+        saveButton.addEventFilter(ActionEvent.ACTION, actionEvent -> {
+            try {
+                resultHolder[0] = formController.buildCourse();
+            } catch (IllegalArgumentException e) {
+                showInfo(e.getMessage());
+                actionEvent.consume();
+            }
+        });
+
+        dialog.setResultConverter(button -> button == saveButtonType ? resultHolder[0] : null);
+        Optional<Course> result = dialog.showAndWait();
+        return result.orElse(null);
     }
 
     private void showInfo(String message) {
