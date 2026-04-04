@@ -1,5 +1,6 @@
 package com.example.java_lms_group_01.Controller.Student;
 
+<<<<<<< HEAD
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 
@@ -27,3 +28,7 @@ public class ProfileController {
         System.out.println("Profile Updated");
     }
 }
+=======
+public class ProfileController {
+}
+>>>>>>> 2115b92ecbf8c6e0b1f174d9f4a8815be2906825
