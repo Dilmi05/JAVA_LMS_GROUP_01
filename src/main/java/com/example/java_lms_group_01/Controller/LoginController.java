@@ -2,6 +2,7 @@ package com.example.java_lms_group_01.Controller;
 
 import com.example.java_lms_group_01.Controller.LandingPages.RoleLandingController;
 import com.example.java_lms_group_01.Controller.Student.StudentDashboardController;
+import com.example.java_lms_group_01.Controller.TechnicalOfficer.TechnicalOfficerDashboardController;
 import com.example.java_lms_group_01.model.users.UserRole;
 import com.example.java_lms_group_01.util.DBConnection;
 import com.example.java_lms_group_01.util.PasswordUtil;
@@ -107,8 +108,8 @@ public class LoginController {
                 title = "Student Dashboard";
             }
             case TECHNICAL_OFFICER -> {
-                fxmlPath = "/view/Landing/technical_officer_landing.fxml";
-                title = "Technical Officer Landing";
+                fxmlPath = "/view/technicalofficer/technical_officer_dashboard.fxml";
+                title = "Technical Officer Dashboard";
             }
             default -> throw new IllegalArgumentException("Unknown role: " + role);
         }
@@ -119,6 +120,9 @@ public class LoginController {
         if (role == UserRole.STUDENT) {
             StudentDashboardController controller = loader.getController();
             controller.setStudentData(registrationNo);
+        } else if (role == UserRole.TECHNICAL_OFFICER) {
+            TechnicalOfficerDashboardController controller = loader.getController();
+            controller.setTechnicalOfficerData(registrationNo);
         } else if (role != UserRole.ADMIN) {
             RoleLandingController controller = loader.getController();
             controller.setLandingData(role.value(), registrationNo);
