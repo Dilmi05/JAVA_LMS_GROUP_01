@@ -1,13 +1,10 @@
 package com.example.java_lms_group_01.util;
 
-/**
- * Stores the registration number of the student who is currently logged in.
- */
-public class StudentContext {
+public class LoggedInStudent {
 
     private static String registrationNo;
 
-    private StudentContext() {
+    private LoggedInStudent() {
     }
 
     public static void setRegistrationNo(String regNo) {

@@ -1,8 +1,5 @@
 package com.example.java_lms_group_01.util;
 
-/**
- * Published grade and grade point.
- */
 public class GradeResult {
     private final String publishedGrade;
     private final Double gradePoint;

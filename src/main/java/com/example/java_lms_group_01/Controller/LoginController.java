@@ -18,10 +18,6 @@ import javafx.stage.Stage;
 
 import java.sql.SQLException;
 
-/**
- * Handles the login screen.
- * It checks the user credentials and opens the dashboard for the correct role.
- */
 public class LoginController {
 
     @FXML
@@ -48,6 +44,7 @@ public class LoginController {
         }
 
         try {
+            // GET Role based On the registration Number
             UserRole role = authRepository.findRoleByRegistrationNo(registrationNo, password);
 
             if (role == null) {
@@ -107,7 +104,7 @@ public class LoginController {
         currentStage.centerOnScreen();
     }
 
-    // Small helper for showing pop-up messages.
+    // showing pop-up messages.
     private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);
         alert.setTitle(title);

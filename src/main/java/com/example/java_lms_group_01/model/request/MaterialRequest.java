@@ -1,8 +1,5 @@
 package com.example.java_lms_group_01.model.request;
 
-/**
- * Simple material request.
- */
 public class MaterialRequest {
     private String courseCode;
     private String name;

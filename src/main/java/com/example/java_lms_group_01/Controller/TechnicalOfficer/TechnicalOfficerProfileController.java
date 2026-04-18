@@ -1,7 +1,7 @@
 package com.example.java_lms_group_01.Controller.TechnicalOfficer;
 
 import com.example.java_lms_group_01.Repository.UserProfileRepository;
-import com.example.java_lms_group_01.util.TechnicalOfficerContext;
+import com.example.java_lms_group_01.util.LoggedInTechnicalOfficer;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
@@ -38,7 +38,7 @@ public class TechnicalOfficerProfileController {
 
     @FXML
     private void saveProfile() {
-        String registrationNo = TechnicalOfficerContext.getRegistrationNo();
+        String registrationNo = LoggedInTechnicalOfficer.getRegistrationNo();
         if (registrationNo == null || registrationNo.isBlank()) {
             show(Alert.AlertType.WARNING, "Session Error", "Technical officer session not found. Please login again.");
             return;
@@ -61,7 +61,7 @@ public class TechnicalOfficerProfileController {
     }
 
     private void loadProfile() {
-        String registrationNo = TechnicalOfficerContext.getRegistrationNo();
+        String registrationNo = LoggedInTechnicalOfficer.getRegistrationNo();
         if (registrationNo == null || registrationNo.isBlank()) {
             return;
         }

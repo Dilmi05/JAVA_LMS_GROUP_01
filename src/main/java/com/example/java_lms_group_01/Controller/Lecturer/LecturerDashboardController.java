@@ -1,7 +1,7 @@
 package com.example.java_lms_group_01.Controller.Lecturer;
 
 import com.example.java_lms_group_01.Repository.UserImageRepository;
-import com.example.java_lms_group_01.util.LecturerContext;
+import com.example.java_lms_group_01.util.LoggedInLecture;
 import com.example.java_lms_group_01.util.ProfileImageUtil;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -45,7 +45,7 @@ public class LecturerDashboardController {
     }
 
     public void setLecturerData(String registrationNo) {
-        LecturerContext.setRegistrationNo(registrationNo);
+        LoggedInLecture.setRegistrationNo(registrationNo);
         lblRegistrationNo.setText("Registration No: " + registrationNo);
         loadProfileImage(registrationNo);
     }
@@ -102,7 +102,7 @@ public class LecturerDashboardController {
 
     @FXML
     private void logout(ActionEvent event) {
-        LecturerContext.clear();
+        LoggedInLecture.clear();
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/view/login_page.fxml"));
             Stage stage = (Stage) contentArea.getScene().getWindow();

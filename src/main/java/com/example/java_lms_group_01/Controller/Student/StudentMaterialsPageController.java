@@ -2,14 +2,13 @@ package com.example.java_lms_group_01.Controller.Student;
 
 import com.example.java_lms_group_01.Repository.StudentRepository;
 import com.example.java_lms_group_01.model.Material;
-import com.example.java_lms_group_01.util.StudentContext;
+import com.example.java_lms_group_01.util.LoggedInStudent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
 
 import java.awt.Desktop;
 import java.io.InputStream;
@@ -70,7 +69,7 @@ public class StudentMaterialsPageController {
     }
 
     private void loadMaterials(String keyword) {
-        String studentReg = StudentContext.getRegistrationNo();
+        String studentReg = LoggedInStudent.getRegistrationNo();
         if (studentReg == null || studentReg.isBlank()) {
             return;
         }

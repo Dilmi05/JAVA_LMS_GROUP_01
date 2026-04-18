@@ -31,11 +31,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-/**
- * Admin screen used to manage every user role.
- * This controller loads the tables for each tab and opens a simple dialog
- * when the admin wants to add or edit a user.
- */
 public class ManageUsersController implements Initializable {
 
     @FXML

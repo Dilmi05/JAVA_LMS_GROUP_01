@@ -1,13 +1,11 @@
 package com.example.java_lms_group_01.util;
 
-/**
- * Stores the registration number of the technical officer who is currently logged in.
- */
-public class TechnicalOfficerContext {
+
+public class LoggedInTechnicalOfficer {
 
     private static String registrationNo;
 
-    private TechnicalOfficerContext() {
+    private LoggedInTechnicalOfficer() {
     }
 
     public static String getRegistrationNo() {
@@ -15,7 +13,7 @@ public class TechnicalOfficerContext {
     }
 
     public static void setRegistrationNo(String registrationNo) {
-        TechnicalOfficerContext.registrationNo = registrationNo;
+        LoggedInTechnicalOfficer.registrationNo = registrationNo;
     }
 
     public static void clear() {

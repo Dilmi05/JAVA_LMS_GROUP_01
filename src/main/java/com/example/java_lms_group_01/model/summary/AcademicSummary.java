@@ -1,8 +1,5 @@
 package com.example.java_lms_group_01.model.summary;
 
-/**
- * Simple GPA summary.
- */
 public class AcademicSummary {
     private double cgpa;
     private double sgpa;

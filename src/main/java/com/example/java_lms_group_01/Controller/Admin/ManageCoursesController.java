@@ -26,9 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-/**
- * Admin screen for viewing, filtering, adding, editing, and deleting courses.
- */
 public class ManageCoursesController implements Initializable {
 
     @FXML
@@ -89,9 +86,12 @@ public class ManageCoursesController implements Initializable {
 
     private void loadDepartmentFilter(String selectedValue) {
         try {
+            // set values to combo BOX
             cmbDeptFilter.getItems().clear();
             cmbDeptFilter.getItems().add("All");
             cmbDeptFilter.getItems().addAll(courseRepository.findAllDepartments());
+
+            //To get value that selected user
             cmbDeptFilter.setValue(cmbDeptFilter.getItems().contains(selectedValue) ? selectedValue : "All");
         } catch (SQLException e) {
             showError("Failed to load department filters.", e);
@@ -124,9 +124,6 @@ public class ManageCoursesController implements Initializable {
         try {
             boolean saved = courseRepository.save(course);
             if (saved) {
-                String selectedDept = cmbDeptFilter.getValue();
-                loadDepartmentFilter(selectedDept);
-                applyFilters();
                 showInfo("Course added successfully.");
             } else {
                 showInfo("No course was added.");
@@ -154,12 +151,7 @@ public class ManageCoursesController implements Initializable {
 
         try {
             boolean deleted = courseRepository.deleteByCourseCode(selectedCourse.getCourseCode());
-            if (deleted) {
-                String selectedDept = cmbDeptFilter.getValue();
-                loadDepartmentFilter(selectedDept);
-                applyFilters();
-                showInfo("Course deleted successfully.");
-            } else {
+            if (!deleted) {
                 showInfo("No course was deleted.");
             }
         } catch (SQLException e) {
@@ -183,9 +175,6 @@ public class ManageCoursesController implements Initializable {
         try {
             boolean updated = courseRepository.update(updatedCourse);
             if (updated) {
-                String selectedDept = cmbDeptFilter.getValue();
-                loadDepartmentFilter(selectedDept);
-                applyFilters();
                 showInfo("Course updated successfully.");
             } else {
                 showInfo("No course was updated.");
@@ -195,7 +184,7 @@ public class ManageCoursesController implements Initializable {
         }
     }
 
-    // Open the reusable course form dialog and return the saved course object.
+    // ADD and Update Course Form Access method
     private Course showCourseForm(Course existingCourse) {
         boolean editMode = existingCourse != null;
         Dialog<Course> dialog = new Dialog<>();

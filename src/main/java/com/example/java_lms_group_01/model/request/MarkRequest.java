@@ -1,8 +1,5 @@
 package com.example.java_lms_group_01.model.request;
 
-/**
- * Simple marks request.
- */
 public class MarkRequest {
     private String studentReg;
     private String courseCode;

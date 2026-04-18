@@ -15,23 +15,4 @@ public enum UserRole {
     public String getValue() {
         return value;
     }
-
-    public static UserRole fromValue(String value) {
-        if (value == null) {
-            throw new IllegalArgumentException("Unsupported role: null");
-        }
-        if (ADMIN.value.equalsIgnoreCase(value)) {
-            return ADMIN;
-        }
-        if (LECTURER.value.equalsIgnoreCase(value)) {
-            return LECTURER;
-        }
-        if (STUDENT.value.equalsIgnoreCase(value)) {
-            return STUDENT;
-        }
-        if (TECHNICAL_OFFICER.value.equalsIgnoreCase(value)) {
-            return TECHNICAL_OFFICER;
-        }
-        throw new IllegalArgumentException("Unsupported role: " + value);
-    }
 }

@@ -2,9 +2,6 @@ package com.example.java_lms_group_01.Controller.Admin;
 
 import javafx.scene.control.TextField;
 
-/**
- * Simple form fields holder used by the admin user dialog.
- */
 class UserFormFields {
     private final TextField firstNameField;
     private final TextField lastNameField;

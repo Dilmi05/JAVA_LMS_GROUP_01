@@ -26,6 +26,7 @@ public class Course {
         this.courseType = courseType;
     }
 
+    // sometimes you get courseType as String(UI/DB some times)
     public Course(String courseCode, String name, String lecturerRegistrationNo, String department,
                   String semester, int credit, String courseType) {
         this(courseCode, name, lecturerRegistrationNo, department, semester, credit, CourseType.fromValue(courseType));

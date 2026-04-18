@@ -2,9 +2,6 @@ package com.example.java_lms_group_01.model;
 
 import java.time.LocalDate;
 
-/**
- * Flat user record model used by admin and profile screens.
- */
 public class UserRecord {
     private String userId;
     private String firstName;

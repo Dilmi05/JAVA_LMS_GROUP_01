@@ -3,7 +3,7 @@ package com.example.java_lms_group_01.Controller.Student;
 import com.example.java_lms_group_01.Repository.UserProfileRepository;
 import com.example.java_lms_group_01.model.UserRecord;
 import com.example.java_lms_group_01.model.users.Student;
-import com.example.java_lms_group_01.util.StudentContext;
+import com.example.java_lms_group_01.util.LoggedInStudent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
@@ -57,7 +57,7 @@ public class StudentProfilePageController {
 
     @FXML
     private void saveProfile() {
-        String regNo = StudentContext.getRegistrationNo();
+        String regNo = LoggedInStudent.getRegistrationNo();
         if (regNo == null || regNo.isBlank()) {
             show(Alert.AlertType.WARNING, "Session Error", "Student session not found. Please login again.");
             return;
@@ -98,7 +98,7 @@ public class StudentProfilePageController {
     }
 
     private void loadProfile() {
-        String regNo = StudentContext.getRegistrationNo();
+        String regNo = LoggedInStudent.getRegistrationNo();
         if (regNo == null || regNo.isBlank()) {
             return;
         }

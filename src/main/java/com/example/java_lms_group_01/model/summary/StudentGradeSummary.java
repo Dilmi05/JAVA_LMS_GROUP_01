@@ -4,9 +4,6 @@ import com.example.java_lms_group_01.model.Grade;
 
 import java.util.List;
 
-/**
- * Simple student grade summary.
- */
 public class StudentGradeSummary {
     private List<Grade> grades;
     private double cgpa;
