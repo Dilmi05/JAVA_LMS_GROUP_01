@@ -2,9 +2,6 @@ package com.example.java_lms_group_01.model;
 
 import javafx.beans.property.SimpleStringProperty;
 
-/**
- * Simple eligibility model used in tables.
- */
 public class Eligibility {
     private String studentReg;
     private String studentName;

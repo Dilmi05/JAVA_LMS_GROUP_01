@@ -2,10 +2,7 @@ package com.example.java_lms_group_01.model;
 
 import java.time.LocalDate;
 
-/**
- * Simple user row model.
- */
-public class UserManagementRow {
+public class UserRecord {
     private String userId;
     private String firstName;
     private String lastName;
@@ -24,13 +21,13 @@ public class UserManagementRow {
     private String position;
     private String profileImagePath;
 
-    public UserManagementRow() {
+    public UserRecord() {
     }
 
-    public UserManagementRow(String userId, String firstName, String lastName, String email, String address,
-                             String phoneNumber, LocalDate dateOfBirth, String gender, String role,
-                             String registrationNo, String password, String department, String batch, Double gpa,
-                             String status, String position, String profileImagePath) {
+    public UserRecord(String userId, String firstName, String lastName, String email, String address,
+                      String phoneNumber, LocalDate dateOfBirth, String gender, String role,
+                      String registrationNo, String password, String department, String batch, Double gpa,
+                      String status, String position, String profileImagePath) {
         this.userId = userId;
         this.firstName = firstName;
         this.lastName = lastName;

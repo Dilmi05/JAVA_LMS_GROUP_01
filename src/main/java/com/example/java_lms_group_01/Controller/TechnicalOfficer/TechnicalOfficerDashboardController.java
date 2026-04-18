@@ -3,7 +3,7 @@ package com.example.java_lms_group_01.Controller.TechnicalOfficer;
 import com.example.java_lms_group_01.Repository.TechnicalOfficerRepository;
 import com.example.java_lms_group_01.Repository.UserProfileRepository;
 import com.example.java_lms_group_01.util.ProfileImageUtil;
-import com.example.java_lms_group_01.util.TechnicalOfficerContext;
+import com.example.java_lms_group_01.util.LoggedInTechnicalOfficer;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -81,7 +81,7 @@ public class TechnicalOfficerDashboardController {
     }
 
     public void setTechnicalOfficerData(String registrationNo) {
-        TechnicalOfficerContext.setRegistrationNo(registrationNo);
+        LoggedInTechnicalOfficer.setRegistrationNo(registrationNo);
         setLabelText(lblRegistrationNo, "Registration No: " + registrationNo);
         setLabelText(lblUserId, "User ID: " + registrationNo);
         loadOfficerDetails(registrationNo);
@@ -121,7 +121,7 @@ public class TechnicalOfficerDashboardController {
 
     @FXML
     private void logout(ActionEvent event) {
-        TechnicalOfficerContext.clear();
+        LoggedInTechnicalOfficer.clear();
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/view/login_page.fxml"));
             Stage stage = (Stage) contentArea.getScene().getWindow();
@@ -157,7 +157,7 @@ public class TechnicalOfficerDashboardController {
 
     private void loadOfficerDetails(String registrationNo) {
         try {
-            com.example.java_lms_group_01.model.UserManagementRow profile =
+            com.example.java_lms_group_01.model.UserRecord profile =
                     userProfileRepository.findTechnicalOfficerProfile(registrationNo);
             if (profile == null) {
                 return;

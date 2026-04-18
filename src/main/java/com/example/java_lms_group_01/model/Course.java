@@ -2,9 +2,6 @@ package com.example.java_lms_group_01.model;
 
 import javafx.beans.property.SimpleStringProperty;
 
-/**
- * Simple course model used by forms, tables, and repositories.
- */
 public class Course {
     private String courseCode;
     private String name;
@@ -29,6 +26,7 @@ public class Course {
         this.courseType = courseType;
     }
 
+    // sometimes you get courseType as String(UI/DB some times)
     public Course(String courseCode, String name, String lecturerRegistrationNo, String department,
                   String semester, int credit, String courseType) {
         this(courseCode, name, lecturerRegistrationNo, department, semester, credit, CourseType.fromValue(courseType));

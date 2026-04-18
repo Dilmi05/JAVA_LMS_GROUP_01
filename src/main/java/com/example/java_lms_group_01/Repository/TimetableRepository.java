@@ -11,14 +11,7 @@ import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Handles timetable database operations
- */
 public class TimetableRepository {
-
-    // =========================
-    // GET TIMETABLE (WITH FILTERS)
-    // =========================
 
     public List<Timetable> findByFilters(String department, String day, String keyword) throws SQLException {
 
@@ -70,9 +63,6 @@ public class TimetableRepository {
         return list;
     }
 
-    // =========================
-    // GET ALL DEPARTMENTS
-    // =========================
 
     public List<String> findAllDepartments() throws SQLException {
 
@@ -96,10 +86,6 @@ public class TimetableRepository {
         return list;
     }
 
-    // =========================
-    // GET ALL DAYS
-    // =========================
-
     public List<String> findAllDays() throws SQLException {
 
         String sql = "SELECT DISTINCT day FROM timetable ORDER BY day";
@@ -122,9 +108,6 @@ public class TimetableRepository {
         return list;
     }
 
-    // =========================
-    // SAVE TIMETABLE
-    // =========================
 
     public boolean save(Timetable t) throws SQLException {
 
@@ -138,10 +121,6 @@ public class TimetableRepository {
         return stm.executeUpdate() > 0;
     }
 
-    // =========================
-    // UPDATE TIMETABLE
-    // =========================
-
     public boolean update(Timetable t) throws SQLException {
 
         String sql = "UPDATE timetable SET department=?, lec_id=?, courseCode=?, admin_id=?, day=?, start_time=?, end_time=?, session_type=? WHERE time_table_id=?";
@@ -153,10 +132,6 @@ public class TimetableRepository {
 
         return stm.executeUpdate() > 0;
     }
-
-    // =========================
-    // DELETE TIMETABLE
-    // =========================
 
     public boolean deleteById(String id) throws SQLException {
 
@@ -170,9 +145,6 @@ public class TimetableRepository {
         return stm.executeUpdate() > 0;
     }
 
-    // =========================
-    // HELPER METHODS
-    // =========================
 
     private void setData(PreparedStatement stm, Timetable t, boolean update) throws SQLException {
 
@@ -216,4 +188,5 @@ public class TimetableRepository {
                 rs.getString("session_type")
         );
     }
+
 }

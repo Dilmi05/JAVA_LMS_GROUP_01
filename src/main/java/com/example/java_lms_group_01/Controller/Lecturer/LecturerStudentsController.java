@@ -2,7 +2,7 @@ package com.example.java_lms_group_01.Controller.Lecturer;
 
 import com.example.java_lms_group_01.Repository.LecturerRepository;
 import com.example.java_lms_group_01.model.Student;
-import com.example.java_lms_group_01.util.LecturerContext;
+import com.example.java_lms_group_01.util.LoggedInLecture;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TableColumn;
@@ -70,7 +70,7 @@ public class LecturerStudentsController {
     }
 
     private String currentLecturer() {
-        String reg = LecturerContext.getRegistrationNo();
+        String reg = LoggedInLecture.getRegistrationNo();
         return reg == null ? "" : reg.trim();
     }
 

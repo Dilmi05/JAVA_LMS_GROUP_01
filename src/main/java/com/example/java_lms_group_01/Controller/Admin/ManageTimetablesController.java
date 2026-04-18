@@ -1,7 +1,8 @@
 package com.example.java_lms_group_01.Controller.Admin;
 
-import com.example.java_lms_group_01.Service.AdminService;
+import com.example.java_lms_group_01.Repository.TimetableRepository;
 import com.example.java_lms_group_01.model.Timetable;
+import com.example.java_lms_group_01.util.LoggedInAdmin;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -24,9 +25,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-/**
- * Admin screen for managing timetable rows.
- */
 public class ManageTimetablesController implements Initializable {
 
     @FXML
@@ -68,7 +66,7 @@ public class ManageTimetablesController implements Initializable {
     @FXML
     private TextField txtSearchAcademicYear;
 
-    private final AdminService adminService = new AdminService();
+    private final TimetableRepository timetableRepository = new TimetableRepository();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -98,7 +96,7 @@ public class ManageTimetablesController implements Initializable {
         try {
             cmbFilterDepartment.getItems().clear();
             cmbFilterDepartment.getItems().add("All");
-            cmbFilterDepartment.getItems().addAll(adminService.getTimetableDepartments());
+            cmbFilterDepartment.getItems().addAll(timetableRepository.findAllDepartments());
             cmbFilterDepartment.setValue(cmbFilterDepartment.getItems().contains(selectedValue) ? selectedValue : "All");
         } catch (SQLException e) {
             showError("Failed to load department filters.", e);
@@ -109,7 +107,7 @@ public class ManageTimetablesController implements Initializable {
         try {
             cmbFilterSemester.getItems().clear();
             cmbFilterSemester.getItems().add("All");
-            cmbFilterSemester.getItems().addAll(adminService.getTimetableDays());
+            cmbFilterSemester.getItems().addAll(timetableRepository.findAllDays());
             cmbFilterSemester.setValue(cmbFilterSemester.getItems().contains(selectedValue) ? selectedValue : "All");
         } catch (SQLException e) {
             showError("Failed to load day filters.", e);
@@ -125,7 +123,7 @@ public class ManageTimetablesController implements Initializable {
     // Load timetable rows using the current filter values.
     private void loadTimetables(String department, String day, String keyword) {
         try {
-            List<Timetable> timetables = adminService.getTimetables(department, day, keyword);
+            List<Timetable> timetables = timetableRepository.findByFilters(department, day, keyword);
             tblTimetable.getItems().setAll(timetables);
         } catch (SQLException e) {
             showError("Failed to load timetables.", e);
@@ -140,7 +138,7 @@ public class ManageTimetablesController implements Initializable {
         }
 
         try {
-            boolean saved = adminService.addTimetable(timetable);
+            boolean saved = timetableRepository.save(timetable);
             if (saved) {
                 refreshFiltersAndTable();
                 showInfo("Timetable added successfully.");
@@ -164,15 +162,15 @@ public class ManageTimetablesController implements Initializable {
         confirmation.setHeaderText("Delete Timetable");
         confirmation.setContentText("Delete timetable ID " + selected.getTimeTableId() + "?");
         Optional<ButtonType> answer = confirmation.showAndWait();
+
         if (answer.isEmpty() || answer.get() != ButtonType.OK) {
             return;
         }
 
         try {
-            boolean deleted = adminService.deleteTimetable(selected.getTimeTableId());
+            boolean deleted = timetableRepository.deleteById(selected.getTimeTableId());
             if (deleted) {
                 refreshFiltersAndTable();
-                showInfo("Timetable deleted successfully.");
             } else {
                 showInfo("No timetable was deleted.");
             }
@@ -195,7 +193,7 @@ public class ManageTimetablesController implements Initializable {
         }
 
         try {
-            boolean changed = adminService.updateTimetable(updated);
+            boolean changed = timetableRepository.update(updated);
             if (changed) {
                 refreshFiltersAndTable();
                 showInfo("Timetable updated successfully.");
@@ -207,9 +205,10 @@ public class ManageTimetablesController implements Initializable {
         }
     }
 
-    // Open a timetable dialog and return a timetable object after validation.
+    // ADD and Update Timetable Form Access method
     private Timetable showTimetableDialog(Timetable existing) {
         boolean editMode = existing != null;
+        String adminRegistrationNo = value(LoggedInAdmin.getRegistrationNo());
 
         Dialog<Timetable> dialog = new Dialog<>();
         dialog.setTitle(editMode ? "Edit Timetable" : "Add Timetable");
@@ -240,6 +239,8 @@ public class ManageTimetablesController implements Initializable {
             txtStartTime.setText(value(existing.getStartTime()));
             txtEndTime.setText(value(existing.getEndTime()));
             cmbSessionType.setValue(value(existing.getSessionType()));
+        } else {
+            txtAdminId.setText(adminRegistrationNo);
         }
 
         GridPane grid = new GridPane();
@@ -312,6 +313,10 @@ public class ManageTimetablesController implements Initializable {
             String lecId = value(txtLecId);
             String courseCode = value(txtCourseCode);
             String adminId = value(txtAdminId);
+            if (adminId.isBlank()) {
+                adminId = adminRegistrationNo;
+            }
+
             if (!lecId.isBlank() && lecId.length() > 10) {
                 showInfo("Lecturer Reg No must be at most 10 characters.");
                 return null;
@@ -363,7 +368,7 @@ public class ManageTimetablesController implements Initializable {
         try {
             return LocalTime.parse(value.length() == 5 ? value + ":00" : value);
         } catch (Exception e) {
-            throw new IllegalArgumentException(field + " must be in HH:mm format.");
+            throw new IllegalArgumentException(field + " must be in HH:mm:ss format.");
         }
     }
 
@@ -371,7 +376,7 @@ public class ManageTimetablesController implements Initializable {
         return value.isBlank() ? null : value;
     }
 
-    // Reload combo box filters and keep the current selection if possible.
+    // Reload combo boxes
     private void refreshFiltersAndTable() {
         String selectedDepartment = cmbFilterDepartment.getValue();
         String selectedDay = cmbFilterSemester.getValue();

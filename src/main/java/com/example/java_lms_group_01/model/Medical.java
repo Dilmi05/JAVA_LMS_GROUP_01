@@ -2,9 +2,6 @@ package com.example.java_lms_group_01.model;
 
 import javafx.beans.property.SimpleStringProperty;
 
-/**
- * Simple medical model used in tables.
- */
 public class Medical {
     private String medicalId;
     private String studentReg;

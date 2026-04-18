@@ -5,10 +5,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-/**
- * Application entry point.
- * JavaFX starts here and opens the login screen first.
- */
 public class Main extends Application {
 
     @Override
@@ -24,7 +20,6 @@ public class Main extends Application {
     }
 
     public static void main(String[] args) {
-        // Hand control over to JavaFX.
         launch();
     }
 }

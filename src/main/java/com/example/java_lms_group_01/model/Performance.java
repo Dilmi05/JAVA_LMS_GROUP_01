@@ -2,9 +2,6 @@ package com.example.java_lms_group_01.model;
 
 import javafx.beans.property.SimpleStringProperty;
 
-/**
- * Simple performance model used in tables.
- */
 public class Performance {
     private String studentReg;
     private String studentName;

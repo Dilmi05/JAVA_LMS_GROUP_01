@@ -2,9 +2,6 @@ package com.example.java_lms_group_01.model;
 
 import javafx.beans.property.SimpleStringProperty;
 
-/**
- * Simple mark model used in tables.
- */
 public class Mark {
     private String markId;
     private String studentReg;

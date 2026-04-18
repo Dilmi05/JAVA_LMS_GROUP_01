@@ -2,9 +2,6 @@ package com.example.java_lms_group_01.model;
 
 import javafx.beans.property.SimpleStringProperty;
 
-/**
- * Simple material model used in tables.
- */
 public class Material {
     private String materialId;
     private String courseCode;

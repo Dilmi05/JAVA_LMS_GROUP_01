@@ -2,7 +2,7 @@ package com.example.java_lms_group_01.Controller.Student;
 
 import com.example.java_lms_group_01.Repository.StudentRepository;
 import com.example.java_lms_group_01.model.Medical;
-import com.example.java_lms_group_01.util.StudentContext;
+import com.example.java_lms_group_01.util.LoggedInStudent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TableColumn;
@@ -41,7 +41,7 @@ public class StudentMedicalPageController {
     }
 
     private void loadMedical() {
-        String regNo = StudentContext.getRegistrationNo();
+        String regNo = LoggedInStudent.getRegistrationNo();
         if (regNo == null || regNo.isBlank()) {
             return;
         }

@@ -1,6 +1,6 @@
 package com.example.java_lms_group_01.Repository;
 
-import com.example.java_lms_group_01.model.UserManagementRow;
+import com.example.java_lms_group_01.model.UserRecord;
 import com.example.java_lms_group_01.util.DBConnection;
 import com.example.java_lms_group_01.util.PasswordUtil;
 
@@ -22,7 +22,7 @@ public class UserRepository {
     private final UserImageRepository userImageRepository = new UserImageRepository();
 
     // Read all admin users.
-    public List<UserManagementRow> findAdmins() throws SQLException {
+    public List<UserRecord> findAdmins() throws SQLException {
         String sql = "SELECT u.user_id, u.firstName, u.lastName, u.email, u.address, u.phoneNumber, u.dateOfBirth, u.gender, "
                 + "'Admin' AS role, a.registrationNo, NULL AS password, NULL AS department, NULL AS batch, NULL AS GPA, NULL AS status, NULL AS position, img.image_path AS profile_image_path "
                 + "FROM users u "
@@ -32,7 +32,7 @@ public class UserRepository {
         return executeQuery(sql);
     }
 
-    public List<UserManagementRow> findLecturers() throws SQLException {
+    public List<UserRecord> findLecturers() throws SQLException {
         String sql = "SELECT u.user_id, u.firstName, u.lastName, u.email, u.address, u.phoneNumber, u.dateOfBirth, u.gender, "
                 + "'Lecturer' AS role, l.registrationNo, NULL AS password, l.department, NULL AS batch, NULL AS GPA, NULL AS status, l.position, img.image_path AS profile_image_path "
                 + "FROM users u "
@@ -42,7 +42,7 @@ public class UserRepository {
         return executeQuery(sql);
     }
 
-    public List<UserManagementRow> findStudents() throws SQLException {
+    public List<UserRecord> findStudents() throws SQLException {
         String sql = "SELECT u.user_id, u.firstName, u.lastName, u.email, u.address, u.phoneNumber, u.dateOfBirth, u.gender, "
                 + "'Student' AS role, s.registrationNo, NULL AS password, s.department, s.batch, s.GPA, s.status, NULL AS position, img.image_path AS profile_image_path "
                 + "FROM users u "
@@ -52,7 +52,7 @@ public class UserRepository {
         return executeQuery(sql);
     }
 
-    public List<UserManagementRow> findTechnicalOfficers() throws SQLException {
+    public List<UserRecord> findTechnicalOfficers() throws SQLException {
         String sql = "SELECT u.user_id, u.firstName, u.lastName, u.email, u.address, u.phoneNumber, u.dateOfBirth, u.gender, "
                 + "'TechnicalOfficer' AS role, t.registrationNo, NULL AS password, NULL AS department, NULL AS batch, NULL AS GPA, NULL AS status, NULL AS position, img.image_path AS profile_image_path "
                 + "FROM users u "
@@ -62,7 +62,7 @@ public class UserRepository {
         return executeQuery(sql);
     }
 
-    public boolean createAdmin(UserManagementRow row) throws SQLException {
+    public boolean createAdmin(UserRecord row) throws SQLException {
         String roleSql = "INSERT INTO admin (registrationNo, password) VALUES (?, ?)";
         Connection connection = DBConnection.getInstance().getConnection();
         boolean originalAutoCommit = connection.getAutoCommit();
@@ -88,7 +88,7 @@ public class UserRepository {
         }
     }
 
-    public boolean createLecturer(UserManagementRow row) throws SQLException {
+    public boolean createLecturer(UserRecord row) throws SQLException {
         String roleSql = "INSERT INTO lecturer (registrationNo, password, department, position) VALUES (?, ?, ?, ?)";
         Connection connection = DBConnection.getInstance().getConnection();
         boolean originalAutoCommit = connection.getAutoCommit();
@@ -116,7 +116,7 @@ public class UserRepository {
         }
     }
 
-    public boolean createStudent(UserManagementRow row) throws SQLException {
+    public boolean createStudent(UserRecord row) throws SQLException {
         String roleSql = "INSERT INTO student (registrationNo, password, department, batch, GPA, status) VALUES (?, ?, ?, ?, ?, ?)";
         Connection connection = DBConnection.getInstance().getConnection();
         boolean originalAutoCommit = connection.getAutoCommit();
@@ -146,7 +146,7 @@ public class UserRepository {
         }
     }
 
-    public boolean createTechnicalOfficer(UserManagementRow row) throws SQLException {
+    public boolean createTechnicalOfficer(UserRecord row) throws SQLException {
         String roleSql = "INSERT INTO tech_officer (registrationNo, password) VALUES (?, ?)";
         Connection connection = DBConnection.getInstance().getConnection();
         boolean originalAutoCommit = connection.getAutoCommit();
@@ -172,7 +172,7 @@ public class UserRepository {
         }
     }
 
-    public boolean updateAdmin(UserManagementRow row) throws SQLException {
+    public boolean updateAdmin(UserRecord row) throws SQLException {
         Connection connection = DBConnection.getInstance().getConnection();
         boolean originalAutoCommit = connection.getAutoCommit();
         connection.setAutoCommit(false);
@@ -201,7 +201,7 @@ public class UserRepository {
         }
     }
 
-    public boolean updateLecturer(UserManagementRow row) throws SQLException {
+    public boolean updateLecturer(UserRecord row) throws SQLException {
         Connection connection = DBConnection.getInstance().getConnection();
         boolean originalAutoCommit = connection.getAutoCommit();
         connection.setAutoCommit(false);
@@ -243,7 +243,7 @@ public class UserRepository {
         }
     }
 
-    public boolean updateStudent(UserManagementRow row) throws SQLException {
+    public boolean updateStudent(UserRecord row) throws SQLException {
         Connection connection = DBConnection.getInstance().getConnection();
         boolean originalAutoCommit = connection.getAutoCommit();
         connection.setAutoCommit(false);
@@ -289,7 +289,7 @@ public class UserRepository {
         }
     }
 
-    public boolean updateTechnicalOfficer(UserManagementRow row) throws SQLException {
+    public boolean updateTechnicalOfficer(UserRecord row) throws SQLException {
         Connection connection = DBConnection.getInstance().getConnection();
         boolean originalAutoCommit = connection.getAutoCommit();
         connection.setAutoCommit(false);
@@ -334,7 +334,7 @@ public class UserRepository {
         return deleteWithRole(userId, "DELETE FROM tech_officer WHERE registrationNo = ?");
     }
 
-    private void insertUser(Connection connection, UserManagementRow row) throws SQLException {
+    private void insertUser(Connection connection, UserRecord row) throws SQLException {
         String userSql = "INSERT INTO users (user_id, firstName, lastName, email, address, phoneNumber, dateOfBirth, gender) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement userStmt = connection.prepareStatement(userSql)) {
             fillUserStatement(userStmt, row, false);
@@ -373,7 +373,7 @@ public class UserRepository {
         }
     }
 
-    private void updateUser(Connection connection, UserManagementRow row) throws SQLException {
+    private void updateUser(Connection connection, UserRecord row) throws SQLException {
         String userSql = "UPDATE users SET firstName = ?, lastName = ?, email = ?, address = ?, phoneNumber = ?, dateOfBirth = ?, gender = ? WHERE user_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(userSql)) {
             fillUserStatement(stmt, row, true);
@@ -382,7 +382,7 @@ public class UserRepository {
         userImageRepository.upsertImagePath(connection, userId(row), row.getProfileImagePath());
     }
 
-    private void fillUserStatement(PreparedStatement stmt, UserManagementRow row, boolean includeUserIdForWhere) throws SQLException {
+    private void fillUserStatement(PreparedStatement stmt, UserRecord row, boolean includeUserIdForWhere) throws SQLException {
         String userId = requiredText(row.getRegistrationNo(), "Registration No");
         if (!includeUserIdForWhere) {
             stmt.setString(1, userId);
@@ -406,12 +406,12 @@ public class UserRepository {
         stmt.setString(8, userId);
     }
 
-    private List<UserManagementRow> executeQuery(String sql) throws SQLException {
+    private List<UserRecord> executeQuery(String sql) throws SQLException {
         Connection connection = DBConnection.getInstance().getConnection();
         try (PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet rs = statement.executeQuery()) {
 
-            List<UserManagementRow> rows = new ArrayList<>();
+            List<UserRecord> rows = new ArrayList<>();
             while (rs.next()) {
                 rows.add(mapRow(rs));
             }
@@ -419,11 +419,11 @@ public class UserRepository {
         }
     }
 
-    private UserManagementRow mapRow(ResultSet rs) throws SQLException {
+    private UserRecord mapRow(ResultSet rs) throws SQLException {
         Date dob = rs.getDate("dateOfBirth");
         Object gpaValue = rs.getObject("GPA");
 
-        return new UserManagementRow(
+        return new UserRecord(
                 rs.getString("user_id"),
                 rs.getString("firstName"),
                 rs.getString("lastName"),
@@ -483,7 +483,7 @@ public class UserRepository {
         return PasswordUtil.hashPassword(requiredText(rawPassword, "Password"));
     }
 
-    private String userId(UserManagementRow row) {
+    private String userId(UserRecord row) {
         return requiredText(row.getRegistrationNo(), "Registration No");
     }
 }

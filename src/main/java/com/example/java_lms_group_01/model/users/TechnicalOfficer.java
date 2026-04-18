@@ -2,9 +2,6 @@ package com.example.java_lms_group_01.model.users;
 
 import java.time.LocalDate;
 
-/**
- * Technical officer object with the extra fields needed for login and profile data.
- */
 public class TechnicalOfficer extends User implements TechnicalOfficerRole {
     private String registrationNo;
     private String password;

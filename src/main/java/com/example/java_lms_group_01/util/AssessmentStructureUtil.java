@@ -1,211 +1,158 @@
 package com.example.java_lms_group_01.util;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Calculates course marks by reading the assessment weights for a course.
- */
 public final class AssessmentStructureUtil {
 
     private AssessmentStructureUtil() {
     }
 
-    public static MarkBreakdown calculateMarkBreakdown(Connection connection, String courseCode,
-                                                       Double quiz1, Double quiz2, Double quiz3,
-                                                       Double assessment, Double project, Double midTerm,
-                                                       Double finalTheory, Double finalPractical) throws SQLException {
-        Map<String, Double> weights = loadWeights(connection, courseCode);
-        double quiz1Weight = getWeight(weights, "quiz_1");
-        double quiz2Weight = getWeight(weights, "quiz_2");
-        double quiz3Weight = getWeight(weights, "quiz_3");
-        double assessmentWeight = getWeight(weights, "assessment");
-        double projectWeight = getWeight(weights, "project");
-        double midTermWeight = getWeight(weights, "mid_term");
+    public static MarkBreakdown calculateMarkBreakdown(
+            Connection connection,
+            String courseCode,
+            Double quiz1Marks, Double quiz2Marks, Double quiz3Marks,
+            Double assignmentMarks, Double projectMarks, Double midTermMarks,
+            Double finalTheoryMarks, Double finalPracticalMarks) throws SQLException {
 
-        double topQuizContribution = topTwoQuizContribution(
-                quiz1, quiz1Weight,
-                quiz2, quiz2Weight,
-                quiz3, quiz3Weight
+        Map<String, Double> weightMap = loadWeights(connection, courseCode);
+
+        // -------- CA PART --------
+        double quizContribution = calculateTopTwoQuizContribution(
+                quiz1Marks, quiz2Marks, quiz3Marks,
+                getWeight(weightMap, "quiz_1"),
+                getWeight(weightMap, "quiz_2"),
+                getWeight(weightMap, "quiz_3")
         );
-        double assessmentContribution = weightedMark(assessment, assessmentWeight);
-        double projectContribution = weightedMark(project, projectWeight);
-        double midTermContribution = weightedMark(midTerm, midTermWeight);
 
-        double caMarks = topQuizContribution + assessmentContribution + projectContribution + midTermContribution;
-        double endMarks = calculateEndMarks(weights, finalTheory, finalPractical);
+        double assignmentContribution = calculateWeightedMark(
+                assignmentMarks, getWeight(weightMap, "assessment")
+        );
+
+        double projectContribution = calculateWeightedMark(
+                projectMarks, getWeight(weightMap, "project")
+        );
+
+        double midTermContribution = calculateWeightedMark(
+                midTermMarks, getWeight(weightMap, "mid_term")
+        );
+
+        double totalCaMarks = quizContribution
+                + assignmentContribution
+                + projectContribution
+                + midTermContribution;
+
+        // -------- END PART --------
+        double totalEndMarks;
+
+        double endExamWeight = getWeight(weightMap, "end_exam");
+
+        if (endExamWeight > 0) {
+            Double averageEndMarks = calculateAverage(finalTheoryMarks, finalPracticalMarks);
+            totalEndMarks = calculateWeightedMark(averageEndMarks, endExamWeight);
+        } else {
+            double theoryContribution = calculateWeightedMark(
+                    finalTheoryMarks, getWeight(weightMap, "final_theory")
+            );
+
+            double practicalContribution = calculateWeightedMark(
+                    finalPracticalMarks, getWeight(weightMap, "final_practical")
+            );
+
+            totalEndMarks = theoryContribution + practicalContribution;
+        }
+
         return new MarkBreakdown(
-                caMarks,
-                endMarks,
-                caMarks + endMarks,
-                calculateCaMaximum(weights),
-                calculateEndMaximum(weights)
+                totalCaMarks,
+                totalEndMarks,
+                totalCaMarks + totalEndMarks,
+                calculateCaMaximum(weightMap),
+                calculateEndMaximum(weightMap)
         );
     }
 
+    // -------- LOAD WEIGHTS FROM DATABASE --------
     private static Map<String, Double> loadWeights(Connection connection, String courseCode) throws SQLException {
-        String sql = "SELECT component, weight FROM assessment_structure WHERE courseCode = ?";
-        Map<String, Double> weights = new HashMap<>();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, courseCode);
-            try (ResultSet rs = statement.executeQuery()) {
-                while (rs.next()) {
-                    String component = normalizeComponent(rs.getString("component"));
-                    if (!component.isBlank()) {
-                        weights.put(component, rs.getDouble("weight"));
-                    }
-                }
-            }
+
+        Map<String, Double> weightMap = new HashMap<>();
+
+        String sqlQuery = "SELECT component, weight FROM assessment_structure WHERE courseCode = ?";
+        PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+        preparedStatement.setString(1, courseCode);
+
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        while (resultSet.next()) {
+            String componentName = resultSet.getString("component")
+                    .toLowerCase()
+                    .replace(" ", "_");
+
+            double weightValue = resultSet.getDouble("weight");
+
+            weightMap.put(componentName, weightValue);
         }
-        return weights;
+
+        return weightMap;
     }
 
-    private static String normalizeComponent(String component) {
-        if (component == null) {
-            return "";
-        }
-        String normalized = component.trim().toLowerCase().replace(' ', '_');
-        if (normalized.equals("quiz1")) {
-            return "quiz_1";
-        }
-        if (normalized.equals("quiz2")) {
-            return "quiz_2";
-        }
-        if (normalized.equals("quiz3")) {
-            return "quiz_3";
-        }
-        if (normalized.equals("assignment")) {
-            return "assessment";
-        }
-        if (normalized.equals("project_work")) {
-            return "project";
-        }
-        if (normalized.equals("mid_exam") || normalized.equals("midterm") || normalized.equals("mid")) {
-            return "mid_term";
-        }
-        if (normalized.equals("end_theory") || normalized.equals("theory") || normalized.equals("endtheory")) {
-            return "final_theory";
-        }
-        if (normalized.equals("end_practical") || normalized.equals("practical") || normalized.equals("endpractical")) {
-            return "final_practical";
-        }
-        if (normalized.equals("endexam") || normalized.equals("finalexam") || normalized.equals("end_exam_marks")) {
-            return "end_exam";
-        }
-        return normalized;
+    // -------- HELPER METHODS --------
+    private static double calculateWeightedMark(Double marks, double weight) {
+        if (marks == null) return 0.0;
+        return (marks * weight) / 100.0;
     }
 
-    private static double weightedMark(Double mark, double weight) {
-        if (mark == null || weight <= 0) {
-            return 0.0;
-        }
-        return mark * weight / 100.0;
+    private static double getWeight(Map<String, Double> weightMap, String componentName) {
+        return weightMap.getOrDefault(componentName, 0.0);
     }
 
-    private static double calculateEndMarks(Map<String, Double> weights, Double finalTheory, Double finalPractical) {
-        double combinedWeight = getWeight(weights, "end_exam");
-        if (combinedWeight > 0) {
-            return weightedMark(averageEndExamMark(finalTheory, finalPractical), combinedWeight);
-        }
-
-        double finalTheoryContribution = weightedMark(finalTheory, getWeight(weights, "final_theory"));
-        double finalPracticalContribution = weightedMark(finalPractical, getWeight(weights, "final_practical"));
-        return finalTheoryContribution + finalPracticalContribution;
+    private static Double calculateAverage(Double value1, Double value2) {
+        if (value1 == null && value2 == null) return null;
+        if (value1 == null) return value2;
+        if (value2 == null) return value1;
+        return (value1 + value2) / 2.0;
     }
 
-    private static double calculateCaMaximum(Map<String, Double> weights) {
-        return topTwoQuizWeight(
-                getWeight(weights, "quiz_1"),
-                getWeight(weights, "quiz_2"),
-                getWeight(weights, "quiz_3")
-        )
-                + getWeight(weights, "assessment")
-                + getWeight(weights, "project")
-                + getWeight(weights, "mid_term");
+    // -------- TOP TWO QUIZ LOGIC --------
+    private static double calculateTopTwoQuizContribution(
+            Double quiz1Marks, Double quiz2Marks, Double quiz3Marks,
+            double quiz1Weight, double quiz2Weight, double quiz3Weight) {
+
+        double quiz1Value = (quiz1Marks == null) ? 0 : (quiz1Marks * quiz1Weight / 100);
+        double quiz2Value = (quiz2Marks == null) ? 0 : (quiz2Marks * quiz2Weight / 100);
+        double quiz3Value = (quiz3Marks == null) ? 0 : (quiz3Marks * quiz3Weight / 100);
+
+        double lowestQuizValue = Math.min(quiz1Value, Math.min(quiz2Value, quiz3Value));
+
+        return quiz1Value + quiz2Value + quiz3Value - lowestQuizValue;
     }
 
-    private static double calculateEndMaximum(Map<String, Double> weights) {
-        double combinedWeight = getWeight(weights, "end_exam");
-        if (combinedWeight > 0) {
-            return combinedWeight;
-        }
-        return getWeight(weights, "final_theory") + getWeight(weights, "final_practical");
+    // -------- MAXIMUM CALCULATIONS --------
+    private static double calculateCaMaximum(Map<String, Double> weightMap) {
+
+        double quiz1Weight = getWeight(weightMap, "quiz_1");
+        double quiz2Weight = getWeight(weightMap, "quiz_2");
+        double quiz3Weight = getWeight(weightMap, "quiz_3");
+
+        double lowestQuizWeight = Math.min(quiz1Weight, Math.min(quiz2Weight, quiz3Weight));
+
+        double totalQuizWeight = quiz1Weight + quiz2Weight + quiz3Weight - lowestQuizWeight;
+
+        return totalQuizWeight
+                + getWeight(weightMap, "assessment")
+                + getWeight(weightMap, "project")
+                + getWeight(weightMap, "mid_term");
     }
 
-    private static Double averageEndExamMark(Double finalTheory, Double finalPractical) {
-        if (finalTheory == null && finalPractical == null) {
-            return null;
-        }
-        if (finalTheory == null) {
-            return finalPractical;
-        }
-        if (finalPractical == null) {
-            return finalTheory;
-        }
-        return (finalTheory + finalPractical) / 2.0;
-    }
+    private static double calculateEndMaximum(Map<String, Double> weightMap) {
 
-    private static double topTwoQuizContribution(Double quiz1, double quiz1Weight,
-                                                 Double quiz2, double quiz2Weight,
-                                                 Double quiz3, double quiz3Weight) {
-        double[] marks = {
-                quiz1 == null ? -1.0 : quiz1,
-                quiz2 == null ? -1.0 : quiz2,
-                quiz3 == null ? -1.0 : quiz3
-        };
-        double[] contributions = {
-                weightedValue(quiz1, quiz1Weight),
-                weightedValue(quiz2, quiz2Weight),
-                weightedValue(quiz3, quiz3Weight)
-        };
+        double endExamWeight = getWeight(weightMap, "end_exam");
 
-        for (int i = 0; i < marks.length - 1; i++) {
-            for (int j = i + 1; j < marks.length; j++) {
-                if (marks[j] > marks[i]) {
-                    double tempMark = marks[i];
-                    marks[i] = marks[j];
-                    marks[j] = tempMark;
-
-                    double tempContribution = contributions[i];
-                    contributions[i] = contributions[j];
-                    contributions[j] = tempContribution;
-                }
-            }
+        if (endExamWeight > 0) {
+            return endExamWeight;
         }
 
-        return contributions[0] + contributions[1];
-    }
-
-    private static double topTwoQuizWeight(double quiz1Weight, double quiz2Weight, double quiz3Weight) {
-        double[] quizWeights = {quiz1Weight, quiz2Weight, quiz3Weight};
-        for (int i = 0; i < quizWeights.length - 1; i++) {
-            for (int j = i + 1; j < quizWeights.length; j++) {
-                if (quizWeights[j] > quizWeights[i]) {
-                    double temp = quizWeights[i];
-                    quizWeights[i] = quizWeights[j];
-                    quizWeights[j] = temp;
-                }
-            }
-        }
-        return quizWeights[0] + quizWeights[1];
-    }
-
-    private static double weightedValue(Double mark, double weight) {
-        if (mark == null || weight <= 0) {
-            return 0.0;
-        }
-        return mark * weight / 100.0;
-    }
-
-    private static double getWeight(Map<String, Double> weights, String component) {
-        Double value = weights.get(component);
-        if (value == null) {
-            return 0.0;
-        }
-        return value;
+        return getWeight(weightMap, "final_theory")
+                + getWeight(weightMap, "final_practical");
     }
 }

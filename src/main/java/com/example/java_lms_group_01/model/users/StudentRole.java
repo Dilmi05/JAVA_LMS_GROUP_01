@@ -1,8 +1,5 @@
 package com.example.java_lms_group_01.model.users;
 
-/**
- * Contract for student-specific profile data.
- */
 public interface StudentRole extends UserContract {
     String getRegistrationNo();
 

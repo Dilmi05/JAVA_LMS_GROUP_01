@@ -22,14 +22,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * This class handles student side database work.
- */
 public class StudentRepository {
 
-    /**
-     * Get all attendance records for one student
-     */
     public List<Attendance> findAttendanceByStudent(String registrationNo) throws SQLException {
 
         String sql = "SELECT attendance_id, StudentReg, courseCode, SubmissionDate, session_type, " +
@@ -54,9 +48,6 @@ public class StudentRepository {
         return list;
     }
 
-    /**
-     * Get attendance eligibility details for each enrolled course
-     */
     public List<Eligibility> findAttendanceEligibilityByStudent(String registrationNo) throws SQLException {
 
         String sql = "SELECT e.courseCode, " +
@@ -123,9 +114,6 @@ public class StudentRepository {
         return list;
     }
 
-    /**
-     * Get all enrolled courses for the student
-     */
     public List<Course> findCoursesByStudent(String registrationNo) throws SQLException {
 
         String sql = "SELECT c.courseCode, c.name, c.lecturerRegistrationNo, c.department, " +
@@ -151,9 +139,6 @@ public class StudentRepository {
         return list;
     }
 
-    /**
-     * Build grade summary with GPA and SGPA
-     */
     public StudentGradeSummary findGradeSummary(String registrationNo) throws SQLException {
 
         String sql = "SELECT m.StudentReg, m.courseCode, c.name, c.credit, " +
@@ -237,9 +222,6 @@ public class StudentRepository {
         return new StudentGradeSummary(grades, cgpa, sgpa);
     }
 
-    /**
-     * Get materials for student
-     */
     public List<Material> findMaterialsByStudent(String registrationNo, String keyword) throws SQLException {
 
         String safeKeyword = "";
@@ -275,9 +257,6 @@ public class StudentRepository {
         return list;
     }
 
-    /**
-     * Get medical records for student
-     */
     public List<Medical> findMedicalByStudent(String registrationNo) throws SQLException {
 
         String sql = "SELECT medical_id, StudentReg, courseCode, SubmissionDate, Description, " +
@@ -302,9 +281,6 @@ public class StudentRepository {
         return list;
     }
 
-    /**
-     * Get timetable for student department
-     */
     public List<Timetable> findTimetableByStudent(String registrationNo) throws SQLException {
 
         Connection connection = DBConnection.getInstance().getConnection();

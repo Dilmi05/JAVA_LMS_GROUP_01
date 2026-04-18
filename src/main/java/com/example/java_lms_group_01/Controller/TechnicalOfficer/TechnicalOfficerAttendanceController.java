@@ -3,7 +3,7 @@ package com.example.java_lms_group_01.Controller.TechnicalOfficer;
 import com.example.java_lms_group_01.Repository.TechnicalOfficerRepository;
 import com.example.java_lms_group_01.model.Attendance;
 import com.example.java_lms_group_01.model.request.AttendanceRequest;
-import com.example.java_lms_group_01.util.TechnicalOfficerContext;
+import com.example.java_lms_group_01.util.LoggedInTechnicalOfficer;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -187,7 +187,7 @@ public class TechnicalOfficerAttendanceController {
     }
 
     private String currentTechOfficerReg() {
-        String reg = TechnicalOfficerContext.getRegistrationNo();
+        String reg = LoggedInTechnicalOfficer.getRegistrationNo();
         return reg == null ? "" : reg.trim();
     }
 

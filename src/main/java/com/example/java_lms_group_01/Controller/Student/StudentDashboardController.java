@@ -2,7 +2,7 @@ package com.example.java_lms_group_01.Controller.Student;
 
 import com.example.java_lms_group_01.Repository.UserImageRepository;
 import com.example.java_lms_group_01.util.ProfileImageUtil;
-import com.example.java_lms_group_01.util.StudentContext;
+import com.example.java_lms_group_01.util.LoggedInStudent;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -35,7 +35,7 @@ public class StudentDashboardController {
 
     public void setStudentData(String registrationNo) {
         lblRegistrationNo.setText("Registration No: " + registrationNo);
-        StudentContext.setRegistrationNo(registrationNo);
+        LoggedInStudent.setRegistrationNo(registrationNo);
         loadProfileImage(registrationNo);
         loadContent("/view/Student/student_profile.fxml");
     }
@@ -82,7 +82,7 @@ public class StudentDashboardController {
 
     @FXML
     private void logout(ActionEvent event) {
-        StudentContext.clear();
+        LoggedInStudent.clear();
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/view/login_page.fxml"));
             Stage stage = (Stage) contentArea.getScene().getWindow();

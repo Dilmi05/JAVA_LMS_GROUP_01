@@ -2,9 +2,6 @@ package com.example.java_lms_group_01.model.summary;
 
 import javafx.beans.property.SimpleStringProperty;
 
-/**
- * Simple undergraduate summary used in tables.
- */
 public class UndergraduateSummary {
     private String studentReg;
     private String studentName;

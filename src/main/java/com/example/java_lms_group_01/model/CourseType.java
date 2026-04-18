@@ -1,8 +1,5 @@
 package com.example.java_lms_group_01.model;
 
-/**
- * Simple enum used to keep course type values consistent.
- */
 public enum CourseType {
     THEORY("theory"),
     PRACTICAL("practical"),

@@ -1,7 +1,7 @@
 package com.example.java_lms_group_01.Controller.Admin;
 
-import com.example.java_lms_group_01.Service.AdminService;
-import com.example.java_lms_group_01.model.UserManagementRow;
+import com.example.java_lms_group_01.Repository.UserRepository;
+import com.example.java_lms_group_01.model.UserRecord;
 import com.example.java_lms_group_01.model.users.UserRole;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
@@ -31,11 +31,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-/**
- * Admin screen used to manage every user role.
- * This controller loads the tables for each tab and opens a simple dialog
- * when the admin wants to add or edit a user.
- */
 public class ManageUsersController implements Initializable {
 
     @FXML
@@ -50,92 +45,92 @@ public class ManageUsersController implements Initializable {
     private Tab tabTechnicalOfficers;
 
     @FXML
-    private TableColumn<UserManagementRow, String> adminAccessLevel;
+    private TableColumn<UserRecord, String> adminAccessLevel;
     @FXML
-    private TableColumn<UserManagementRow, String> adminDeptId;
+    private TableColumn<UserRecord, String> adminDeptId;
     @FXML
-    private TableColumn<UserManagementRow, String> adminEmail;
+    private TableColumn<UserRecord, String> adminEmail;
     @FXML
-    private TableColumn<UserManagementRow, String> adminFirstName;
+    private TableColumn<UserRecord, String> adminFirstName;
     @FXML
-    private TableColumn<UserManagementRow, String> adminGender;
+    private TableColumn<UserRecord, String> adminGender;
     @FXML
-    private TableColumn<UserManagementRow, String> adminId;
+    private TableColumn<UserRecord, String> adminId;
     @FXML
-    private TableColumn<UserManagementRow, String> adminLastName;
+    private TableColumn<UserRecord, String> adminLastName;
     @FXML
-    private TableColumn<UserManagementRow, String> adminPhone;
+    private TableColumn<UserRecord, String> adminPhone;
     @FXML
-    private TableView<UserManagementRow> tblAdmins;
+    private TableView<UserRecord> tblAdmins;
 
     @FXML
-    private TableColumn<UserManagementRow, String> lecDeptId;
+    private TableColumn<UserRecord, String> lecDeptId;
     @FXML
-    private TableColumn<UserManagementRow, String> lecEmail;
+    private TableColumn<UserRecord, String> lecEmail;
     @FXML
-    private TableColumn<UserManagementRow, String> lecFirstName;
+    private TableColumn<UserRecord, String> lecFirstName;
     @FXML
-    private TableColumn<UserManagementRow, String> lecGender;
+    private TableColumn<UserRecord, String> lecGender;
     @FXML
-    private TableColumn<UserManagementRow, String> lecId;
+    private TableColumn<UserRecord, String> lecId;
     @FXML
-    private TableColumn<UserManagementRow, String> lecLastName;
+    private TableColumn<UserRecord, String> lecLastName;
     @FXML
-    private TableColumn<UserManagementRow, String> lecPhone;
+    private TableColumn<UserRecord, String> lecPhone;
     @FXML
-    private TableColumn<UserManagementRow, String> lecPosition;
+    private TableColumn<UserRecord, String> lecPosition;
     @FXML
-    private TableColumn<UserManagementRow, String> lecRegNo;
+    private TableColumn<UserRecord, String> lecRegNo;
     @FXML
-    private TableView<UserManagementRow> tblLecturers;
+    private TableView<UserRecord> tblLecturers;
 
     @FXML
-    private TableColumn<UserManagementRow, String> stuBatchId;
+    private TableColumn<UserRecord, String> stuBatchId;
     @FXML
-    private TableColumn<UserManagementRow, String> stuDeptId;
+    private TableColumn<UserRecord, String> stuDeptId;
     @FXML
-    private TableColumn<UserManagementRow, String> stuEmail;
+    private TableColumn<UserRecord, String> stuEmail;
     @FXML
-    private TableColumn<UserManagementRow, String> stuFirstName;
+    private TableColumn<UserRecord, String> stuFirstName;
     @FXML
-    private TableColumn<UserManagementRow, String> stuGender;
+    private TableColumn<UserRecord, String> stuGender;
     @FXML
-    private TableColumn<UserManagementRow, String> stuId;
+    private TableColumn<UserRecord, String> stuId;
     @FXML
-    private TableColumn<UserManagementRow, String> stuLastName;
+    private TableColumn<UserRecord, String> stuLastName;
     @FXML
-    private TableColumn<UserManagementRow, String> stuPhone;
+    private TableColumn<UserRecord, String> stuPhone;
     @FXML
-    private TableColumn<UserManagementRow, String> stuRegNo;
+    private TableColumn<UserRecord, String> stuRegNo;
     @FXML
-    private TableColumn<UserManagementRow, String> stuStatus;
+    private TableColumn<UserRecord, String> stuStatus;
     @FXML
-    private TableView<UserManagementRow> tblStudents;
+    private TableView<UserRecord> tblStudents;
 
     @FXML
-    private TableColumn<UserManagementRow, String> toDeptId;
+    private TableColumn<UserRecord, String> toDeptId;
     @FXML
-    private TableColumn<UserManagementRow, String> toEmail;
+    private TableColumn<UserRecord, String> toEmail;
     @FXML
-    private TableColumn<UserManagementRow, String> toFirstName;
+    private TableColumn<UserRecord, String> toFirstName;
     @FXML
-    private TableColumn<UserManagementRow, String> toGender;
+    private TableColumn<UserRecord, String> toGender;
     @FXML
-    private TableColumn<UserManagementRow, String> toId;
+    private TableColumn<UserRecord, String> toId;
     @FXML
-    private TableColumn<UserManagementRow, String> toLab;
+    private TableColumn<UserRecord, String> toLab;
     @FXML
-    private TableColumn<UserManagementRow, String> toLastName;
+    private TableColumn<UserRecord, String> toLastName;
     @FXML
-    private TableColumn<UserManagementRow, String> toPhone;
+    private TableColumn<UserRecord, String> toPhone;
     @FXML
-    private TableColumn<UserManagementRow, String> toPosition;
+    private TableColumn<UserRecord, String> toPosition;
     @FXML
-    private TableColumn<UserManagementRow, String> toShift;
+    private TableColumn<UserRecord, String> toShift;
     @FXML
-    private TableView<UserManagementRow> tblTechnicalOfficers;
+    private TableView<UserRecord> tblTechnicalOfficers;
 
-    private final AdminService adminService = new AdminService();
+    private final UserRepository userRepository = new UserRepository();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -160,12 +155,12 @@ public class ManageUsersController implements Initializable {
         }
 
         try {
-            UserManagementRow row = showRoleDialog(role, null);
+            UserRecord row = showRoleDialog(role, null);
             if (row == null) {
                 return;
             }
 
-            boolean created = adminService.addUser(role, row);
+            boolean created = addUser(role, row);
 
             if (created) {
                 loadAllTables();
@@ -186,19 +181,19 @@ public class ManageUsersController implements Initializable {
             return;
         }
 
-        UserManagementRow selected = getSelectedRowByRole(role);
+        UserRecord selected = getSelectedRowByRole(role);
         if (selected == null) {
             showInfo("Please select a row in the active tab.");
             return;
         }
 
         try {
-            UserManagementRow row = showRoleDialog(role, selected);
+            UserRecord row = showRoleDialog(role, selected);
             if (row == null) {
                 return;
             }
 
-            boolean updated = adminService.updateUser(role, row);
+            boolean updated = updateUser(role, row);
 
             if (updated) {
                 loadAllTables();
@@ -219,7 +214,7 @@ public class ManageUsersController implements Initializable {
             return;
         }
 
-        UserManagementRow selected = getSelectedRowByRole(role);
+        UserRecord selected = getSelectedRowByRole(role);
         if (selected == null) {
             showInfo("Please select a row in the active tab.");
             return;
@@ -234,7 +229,7 @@ public class ManageUsersController implements Initializable {
         }
 
         try {
-            boolean deleted = adminService.deleteUser(role, selected.getUserId());
+            boolean deleted = deleteUser(role, selected.getUserId());
 
             if (deleted) {
                 loadAllTables();
@@ -262,7 +257,7 @@ public class ManageUsersController implements Initializable {
         return null;
     }
 
-    private UserManagementRow getSelectedRowByRole(UserRole role) {
+    private UserRecord getSelectedRowByRole(UserRole role) {
         if (role == UserRole.ADMIN) {
             return tblAdmins.getSelectionModel().getSelectedItem();
         }
@@ -278,7 +273,7 @@ public class ManageUsersController implements Initializable {
         return null;
     }
 
-    private UserManagementRow showRoleDialog(UserRole role, UserManagementRow existing) {
+    private UserRecord showRoleDialog(UserRole role, UserRecord existing) {
         if (role == UserRole.ADMIN) {
             return showAdminDialog(existing);
         }
@@ -294,9 +289,9 @@ public class ManageUsersController implements Initializable {
         return null;
     }
 
-    private UserManagementRow showAdminDialog(UserManagementRow existing) {
+    private UserRecord showAdminDialog(UserRecord existing) {
         boolean edit = existing != null;
-        Dialog<UserManagementRow> dialog = baseDialog(edit ? "Edit Admin" : "Add Admin", edit);
+        Dialog<UserRecord> dialog = baseDialog(edit ? "Edit Admin" : "Add Admin", edit);
 
         UserFormFields formFields = createCommonFields(existing);
         DatePicker dob = dateOfBirthPicker(existing);
@@ -326,9 +321,9 @@ public class ManageUsersController implements Initializable {
         return dialog.showAndWait().orElse(null);
     }
 
-    private UserManagementRow showLecturerDialog(UserManagementRow existing) {
+    private UserRecord showLecturerDialog(UserRecord existing) {
         boolean edit = existing != null;
-        Dialog<UserManagementRow> dialog = baseDialog(edit ? "Edit Lecturer" : "Add Lecturer", edit);
+        Dialog<UserRecord> dialog = baseDialog(edit ? "Edit Lecturer" : "Add Lecturer", edit);
 
         UserFormFields formFields = createCommonFields(existing);
         DatePicker dob = dateOfBirthPicker(existing);
@@ -364,9 +359,9 @@ public class ManageUsersController implements Initializable {
         return dialog.showAndWait().orElse(null);
     }
 
-    private UserManagementRow showStudentDialog(UserManagementRow existing) {
+    private UserRecord showStudentDialog(UserRecord existing) {
         boolean edit = existing != null;
-        Dialog<UserManagementRow> dialog = baseDialog(edit ? "Edit Student" : "Add Student", edit);
+        Dialog<UserRecord> dialog = baseDialog(edit ? "Edit Student" : "Add Student", edit);
 
         UserFormFields formFields = createCommonFields(existing);
         DatePicker dob = dateOfBirthPicker(existing);
@@ -410,9 +405,9 @@ public class ManageUsersController implements Initializable {
         return dialog.showAndWait().orElse(null);
     }
 
-    private UserManagementRow showTechnicalOfficerDialog(UserManagementRow existing) {
+    private UserRecord showTechnicalOfficerDialog(UserRecord existing) {
         boolean edit = existing != null;
-        Dialog<UserManagementRow> dialog = baseDialog(edit ? "Edit Technical Officer" : "Add Technical Officer", edit);
+        Dialog<UserRecord> dialog = baseDialog(edit ? "Edit Technical Officer" : "Add Technical Officer", edit);
 
         UserFormFields formFields = createCommonFields(existing);
         DatePicker dob = dateOfBirthPicker(existing);
@@ -442,8 +437,8 @@ public class ManageUsersController implements Initializable {
         return dialog.showAndWait().orElse(null);
     }
 
-    private Dialog<UserManagementRow> baseDialog(String title, boolean edit) {
-        Dialog<UserManagementRow> dialog = new Dialog<>();
+    private Dialog<UserRecord> baseDialog(String title, boolean edit) {
+        Dialog<UserRecord> dialog = new Dialog<>();
         dialog.setTitle(title);
         dialog.setHeaderText(edit ? "Update selected record." : "Enter details.");
         ButtonType save = new ButtonType(edit ? "Update" : "Save", ButtonBar.ButtonData.OK_DONE);
@@ -451,7 +446,7 @@ public class ManageUsersController implements Initializable {
         return dialog;
     }
 
-    private UserFormFields createCommonFields(UserManagementRow existing) {
+    private UserFormFields createCommonFields(UserRecord existing) {
         return new UserFormFields(
                 new TextField(existing == null ? "" : value(existing.getFirstName())),
                 new TextField(existing == null ? "" : value(existing.getLastName())),
@@ -462,11 +457,11 @@ public class ManageUsersController implements Initializable {
         );
     }
 
-    private DatePicker dateOfBirthPicker(UserManagementRow existing) {
+    private DatePicker dateOfBirthPicker(UserRecord existing) {
         return new DatePicker(existing == null ? null : existing.getDateOfBirth());
     }
 
-    private ComboBox<String> genderBox(UserManagementRow existing) {
+    private ComboBox<String> genderBox(UserRecord existing) {
         ComboBox<String> cmbGender = new ComboBox<>();
         cmbGender.getItems().addAll("Male", "Female", "Other");
         cmbGender.setValue(existing == null ? null : existing.getGender());
@@ -498,10 +493,10 @@ public class ManageUsersController implements Initializable {
         return rowIndex;
     }
 
-    private UserManagementRow buildAdminRow(UserManagementRow existing, boolean edit, UserFormFields fields,
+    private UserRecord buildAdminRow(UserRecord existing, boolean edit, UserFormFields fields,
                                             DatePicker dob, ComboBox<String> gender, TextField txtReg, TextField txtPassword) {
         String password = requirePasswordForCreate(edit, txtPassword);
-        return new UserManagementRow(
+        return new UserRecord(
                 edit ? existing.getUserId() : required(txtReg, "Registration No"),
                 required(fields.getFirstNameField(), "First name"),
                 required(fields.getLastNameField(), "Last name"),
@@ -522,11 +517,11 @@ public class ManageUsersController implements Initializable {
         );
     }
 
-    private UserManagementRow buildLecturerRow(UserManagementRow existing, boolean edit, UserFormFields fields,
+    private UserRecord buildLecturerRow(UserRecord existing, boolean edit, UserFormFields fields,
                                                DatePicker dob, ComboBox<String> gender, TextField txtReg, TextField txtPassword,
                                                TextField txtDepartment, TextField txtPosition) {
         String password = requirePasswordForCreate(edit, txtPassword);
-        return new UserManagementRow(
+        return new UserRecord(
                 edit ? existing.getUserId() : required(txtReg, "Registration No"),
                 required(fields.getFirstNameField(), "First name"),
                 required(fields.getLastNameField(), "Last name"),
@@ -547,12 +542,12 @@ public class ManageUsersController implements Initializable {
         );
     }
 
-    private UserManagementRow buildStudentRow(UserManagementRow existing, boolean edit, UserFormFields fields,
+    private UserRecord buildStudentRow(UserRecord existing, boolean edit, UserFormFields fields,
                                               DatePicker dob, ComboBox<String> gender, TextField txtReg, TextField txtPassword,
                                               TextField txtDepartment, TextField txtBatch, TextField txtGpa,
                                               ComboBox<String> cmbStatus) {
         String password = requirePasswordForCreate(edit, txtPassword);
-        return new UserManagementRow(
+        return new UserRecord(
                 edit ? existing.getUserId() : required(txtReg, "Registration No"),
                 required(fields.getFirstNameField(), "First name"),
                 required(fields.getLastNameField(), "Last name"),
@@ -573,10 +568,10 @@ public class ManageUsersController implements Initializable {
         );
     }
 
-    private UserManagementRow buildTechnicalOfficerRow(UserManagementRow existing, boolean edit, UserFormFields fields,
+    private UserRecord buildTechnicalOfficerRow(UserRecord existing, boolean edit, UserFormFields fields,
                                                        DatePicker dob, ComboBox<String> gender, TextField txtReg, TextField txtPassword) {
         String password = requirePasswordForCreate(edit, txtPassword);
-        return new UserManagementRow(
+        return new UserRecord(
                 edit ? existing.getUserId() : required(txtReg, "Registration No"),
                 required(fields.getFirstNameField(), "First name"),
                 required(fields.getLastNameField(), "Last name"),
@@ -619,13 +614,61 @@ public class ManageUsersController implements Initializable {
 
     private void loadAllTables() {
         try {
-            tblAdmins.getItems().setAll(adminService.getAdmins());
-            tblLecturers.getItems().setAll(adminService.getLecturers());
-            tblStudents.getItems().setAll(adminService.getStudents());
-            tblTechnicalOfficers.getItems().setAll(adminService.getTechnicalOfficers());
+            tblAdmins.getItems().setAll(userRepository.findAdmins());
+            tblLecturers.getItems().setAll(userRepository.findLecturers());
+            tblStudents.getItems().setAll(userRepository.findStudents());
+            tblTechnicalOfficers.getItems().setAll(userRepository.findTechnicalOfficers());
         } catch (SQLException e) {
             showError("Failed to load user tables.", e);
         }
+    }
+
+    private boolean addUser(UserRole role, UserRecord row) throws SQLException {
+        if (role == UserRole.ADMIN) {
+            return userRepository.createAdmin(row);
+        }
+        if (role == UserRole.LECTURER) {
+            return userRepository.createLecturer(row);
+        }
+        if (role == UserRole.STUDENT) {
+            return userRepository.createStudent(row);
+        }
+        if (role == UserRole.TECHNICAL_OFFICER) {
+            return userRepository.createTechnicalOfficer(row);
+        }
+        throw new IllegalArgumentException("Unknown role: " + role);
+    }
+
+    private boolean updateUser(UserRole role, UserRecord row) throws SQLException {
+        if (role == UserRole.ADMIN) {
+            return userRepository.updateAdmin(row);
+        }
+        if (role == UserRole.LECTURER) {
+            return userRepository.updateLecturer(row);
+        }
+        if (role == UserRole.STUDENT) {
+            return userRepository.updateStudent(row);
+        }
+        if (role == UserRole.TECHNICAL_OFFICER) {
+            return userRepository.updateTechnicalOfficer(row);
+        }
+        throw new IllegalArgumentException("Unknown role: " + role);
+    }
+
+    private boolean deleteUser(UserRole role, String userId) throws SQLException {
+        if (role == UserRole.ADMIN) {
+            return userRepository.deleteAdmin(userId);
+        }
+        if (role == UserRole.LECTURER) {
+            return userRepository.deleteLecturer(userId);
+        }
+        if (role == UserRole.STUDENT) {
+            return userRepository.deleteStudent(userId);
+        }
+        if (role == UserRole.TECHNICAL_OFFICER) {
+            return userRepository.deleteTechnicalOfficer(userId);
+        }
+        throw new IllegalArgumentException("Unknown role: " + role);
     }
 
     private void configureAdminTable() {

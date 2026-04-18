@@ -2,9 +2,6 @@ package com.example.java_lms_group_01.model.users;
 
 import java.time.LocalDate;
 
-/**
- * Common contract shared by every user type in the system.
- */
 public interface UserContract {
     String getUserId();
 

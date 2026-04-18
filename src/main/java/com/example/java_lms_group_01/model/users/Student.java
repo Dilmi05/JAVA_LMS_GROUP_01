@@ -2,9 +2,6 @@ package com.example.java_lms_group_01.model.users;
 
 import java.time.LocalDate;
 
-/**
- * Student object used when the program needs student-specific fields.
- */
 public class Student extends User implements StudentRole {
     private String registrationNo;
     private String password;

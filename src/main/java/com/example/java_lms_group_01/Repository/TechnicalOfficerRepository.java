@@ -14,13 +14,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Database access used by technical officer pages.
- * This class handles attendance records, medical records, and dashboard counts.
- */
 public class TechnicalOfficerRepository {
 
-    // Add a new attendance record.
+
     public void addAttendance(AttendanceRequest request) throws SQLException {
         String sql = "INSERT INTO attendance (StudentReg, courseCode, tech_officer_reg, SubmissionDate, session_type, attendance_status) VALUES (?, ?, ?, ?, ?, ?)";
         Connection connection = DBConnection.getInstance().getConnection();

@@ -1,8 +1,6 @@
 package com.example.java_lms_group_01.util;
 
-/**
- * Simple mark breakdown used by grading utilities.
- */
+
 public class MarkBreakdown {
     private final double caMarks;
     private final double endMarks;

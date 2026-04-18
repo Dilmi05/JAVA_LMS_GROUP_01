@@ -3,7 +3,7 @@ package com.example.java_lms_group_01.Controller.TechnicalOfficer;
 import com.example.java_lms_group_01.Repository.TechnicalOfficerRepository;
 import com.example.java_lms_group_01.model.Medical;
 import com.example.java_lms_group_01.model.request.MedicalRequest;
-import com.example.java_lms_group_01.util.TechnicalOfficerContext;
+import com.example.java_lms_group_01.util.LoggedInTechnicalOfficer;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -207,7 +207,7 @@ public class TechnicalOfficerMedicalController {
     }
 
     private String currentTechOfficerReg() {
-        String reg = TechnicalOfficerContext.getRegistrationNo();
+        String reg = LoggedInTechnicalOfficer.getRegistrationNo();
         return reg == null ? "" : reg.trim();
     }
 

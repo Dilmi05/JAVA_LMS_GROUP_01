@@ -2,9 +2,6 @@ package com.example.java_lms_group_01.model.users;
 
 import java.time.LocalDate;
 
-/**
- * Base class that stores common details shared by every system user.
- */
 public class User implements UserContract {
     private String userId;
     private String firstName;

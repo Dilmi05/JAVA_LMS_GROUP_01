@@ -1,7 +1,7 @@
 package com.example.java_lms_group_01.Controller.Lecturer;
 
 import com.example.java_lms_group_01.Repository.UserProfileRepository;
-import com.example.java_lms_group_01.util.LecturerContext;
+import com.example.java_lms_group_01.util.LoggedInLecture;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
@@ -42,7 +42,7 @@ public class LecturerProfileController {
 
     @FXML
     private void saveProfile() {
-        String regNo = LecturerContext.getRegistrationNo();
+        String regNo = LoggedInLecture.getRegistrationNo();
         if (regNo == null || regNo.isBlank()) {
             show(Alert.AlertType.WARNING, "Session Error", "Lecturer session not found. Please login again.");
             return;
@@ -67,13 +67,13 @@ public class LecturerProfileController {
     }
 
     private void loadProfile() {
-        String regNo = LecturerContext.getRegistrationNo();
+        String regNo = LoggedInLecture.getRegistrationNo();
         if (regNo == null || regNo.isBlank()) {
             return;
         }
 
         try {
-            com.example.java_lms_group_01.model.UserManagementRow profile =
+            com.example.java_lms_group_01.model.UserRecord profile =
                     userProfileRepository.findLecturerProfile(regNo);
             if (profile == null) {
                 return;

@@ -2,9 +2,6 @@ package com.example.java_lms_group_01.model.request;
 
 import java.time.LocalDate;
 
-/**
- * Simple attendance request.
- */
 public class AttendanceRequest {
     private String studentRegNo;
     private String courseCode;

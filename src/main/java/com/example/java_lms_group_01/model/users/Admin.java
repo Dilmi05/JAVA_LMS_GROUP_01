@@ -2,9 +2,6 @@ package com.example.java_lms_group_01.model.users;
 
 import java.time.LocalDate;
 
-/**
- * Simple admin model class.
- */
 public class Admin extends User implements AdminRole {
     private String registrationNo;
     private String password;

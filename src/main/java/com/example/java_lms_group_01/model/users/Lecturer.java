@@ -1,8 +1,5 @@
 package com.example.java_lms_group_01.model.users;
 
-/**
- * Lecturer object with department, position, and registration details.
- */
 public class Lecturer extends User implements LecturerRole {
     private String registrationNo;
     private String department;

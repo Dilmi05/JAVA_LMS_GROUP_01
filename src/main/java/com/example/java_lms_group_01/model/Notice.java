@@ -4,9 +4,6 @@ import javafx.beans.property.SimpleStringProperty;
 
 import java.time.LocalDate;
 
-/**
- * Simple notice model used by the notice table and notice forms.
- */
 public class Notice {
     private int noticeId;
     private String title;

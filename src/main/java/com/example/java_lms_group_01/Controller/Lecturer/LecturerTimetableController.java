@@ -2,7 +2,7 @@ package com.example.java_lms_group_01.Controller.Lecturer;
 
 import com.example.java_lms_group_01.Repository.LecturerRepository;
 import com.example.java_lms_group_01.model.Timetable;
-import com.example.java_lms_group_01.util.LecturerContext;
+import com.example.java_lms_group_01.util.LoggedInLecture;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TableColumn;
@@ -43,7 +43,7 @@ public class LecturerTimetableController {
     }
 
     private void loadTimetable() {
-        String lecturerReg = LecturerContext.getRegistrationNo();
+        String lecturerReg = LoggedInLecture.getRegistrationNo();
         if (lecturerReg == null || lecturerReg.isBlank()) {
             return;
         }

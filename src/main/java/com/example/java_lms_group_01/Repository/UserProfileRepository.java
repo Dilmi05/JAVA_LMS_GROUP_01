@@ -1,6 +1,6 @@
 package com.example.java_lms_group_01.Repository;
 
-import com.example.java_lms_group_01.model.UserManagementRow;
+import com.example.java_lms_group_01.model.UserRecord;
 import com.example.java_lms_group_01.util.DBConnection;
 import com.example.java_lms_group_01.util.PasswordUtil;
 
@@ -20,7 +20,7 @@ public class UserProfileRepository {
     // LOAD PROFILES
     // =========================
 
-    public UserManagementRow findStudentProfile(String regNo) throws SQLException {
+    public UserRecord findStudentProfile(String regNo) throws SQLException {
 
         String sql = "SELECT * FROM users u INNER JOIN student s ON s.registrationNo = u.user_id WHERE s.registrationNo=?";
 
@@ -35,7 +35,7 @@ public class UserProfileRepository {
             return null;
         }
 
-        return new UserManagementRow(
+        return new UserRecord(
                 rs.getString("user_id"),
                 rs.getString("firstName"),
                 rs.getString("lastName"),
@@ -55,7 +55,7 @@ public class UserProfileRepository {
         );
     }
 
-    public UserManagementRow findLecturerProfile(String regNo) throws SQLException {
+    public UserRecord findLecturerProfile(String regNo) throws SQLException {
 
         String sql = "SELECT * FROM users u INNER JOIN lecturer l ON l.registrationNo=u.user_id WHERE l.registrationNo=?";
 
@@ -70,7 +70,7 @@ public class UserProfileRepository {
             return null;
         }
 
-        return new UserManagementRow(
+        return new UserRecord(
                 rs.getString("user_id"),
                 rs.getString("firstName"),
                 rs.getString("lastName"),
@@ -90,7 +90,7 @@ public class UserProfileRepository {
         );
     }
 
-    public UserManagementRow findTechnicalOfficerProfile(String regNo) throws SQLException {
+    public UserRecord findTechnicalOfficerProfile(String regNo) throws SQLException {
 
         String sql = "SELECT * FROM users u INNER JOIN tech_officer t ON t.registrationNo=u.user_id WHERE t.registrationNo=?";
 
@@ -105,7 +105,7 @@ public class UserProfileRepository {
             return null;
         }
 
-        return new UserManagementRow(
+        return new UserRecord(
                 rs.getString("user_id"),
                 rs.getString("firstName"),
                 rs.getString("lastName"),

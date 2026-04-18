@@ -1,6 +1,6 @@
 package com.example.java_lms_group_01.Controller.Admin;
 
-import com.example.java_lms_group_01.Service.AdminService;
+import com.example.java_lms_group_01.Repository.CourseRepository;
 import com.example.java_lms_group_01.model.Course;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -26,9 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-/**
- * Admin screen for viewing, filtering, adding, editing, and deleting courses.
- */
 public class ManageCoursesController implements Initializable {
 
     @FXML
@@ -64,7 +61,7 @@ public class ManageCoursesController implements Initializable {
     @FXML
     private TextField txtSearchCourse;
 
-    private final AdminService adminService = new AdminService();
+    private final CourseRepository courseRepository = new CourseRepository();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -89,9 +86,12 @@ public class ManageCoursesController implements Initializable {
 
     private void loadDepartmentFilter(String selectedValue) {
         try {
+            // set values to combo BOX
             cmbDeptFilter.getItems().clear();
             cmbDeptFilter.getItems().add("All");
-            cmbDeptFilter.getItems().addAll(adminService.getCourseDepartments());
+            cmbDeptFilter.getItems().addAll(courseRepository.findAllDepartments());
+
+            //To get value that selected user
             cmbDeptFilter.setValue(cmbDeptFilter.getItems().contains(selectedValue) ? selectedValue : "All");
         } catch (SQLException e) {
             showError("Failed to load department filters.", e);
@@ -107,7 +107,7 @@ public class ManageCoursesController implements Initializable {
     // Load courses using the current filter values.
     private void loadCourses(String department, String keyword) {
         try {
-            List<Course> courses = adminService.getCourses(department, keyword);
+            List<Course> courses = courseRepository.findByFilters(department, keyword);
             tblCourses.getItems().setAll(courses);
         } catch (SQLException e) {
             showError("Failed to load courses.", e);
@@ -122,11 +122,8 @@ public class ManageCoursesController implements Initializable {
         }
 
         try {
-            boolean saved = adminService.addCourse(course);
+            boolean saved = courseRepository.save(course);
             if (saved) {
-                String selectedDept = cmbDeptFilter.getValue();
-                loadDepartmentFilter(selectedDept);
-                applyFilters();
                 showInfo("Course added successfully.");
             } else {
                 showInfo("No course was added.");
@@ -153,13 +150,8 @@ public class ManageCoursesController implements Initializable {
         }
 
         try {
-            boolean deleted = adminService.deleteCourse(selectedCourse.getCourseCode());
-            if (deleted) {
-                String selectedDept = cmbDeptFilter.getValue();
-                loadDepartmentFilter(selectedDept);
-                applyFilters();
-                showInfo("Course deleted successfully.");
-            } else {
+            boolean deleted = courseRepository.deleteByCourseCode(selectedCourse.getCourseCode());
+            if (!deleted) {
                 showInfo("No course was deleted.");
             }
         } catch (SQLException e) {
@@ -181,11 +173,8 @@ public class ManageCoursesController implements Initializable {
         }
 
         try {
-            boolean updated = adminService.updateCourse(updatedCourse);
+            boolean updated = courseRepository.update(updatedCourse);
             if (updated) {
-                String selectedDept = cmbDeptFilter.getValue();
-                loadDepartmentFilter(selectedDept);
-                applyFilters();
                 showInfo("Course updated successfully.");
             } else {
                 showInfo("No course was updated.");
@@ -195,7 +184,7 @@ public class ManageCoursesController implements Initializable {
         }
     }
 
-    // Open the reusable course form dialog and return the saved course object.
+    // ADD and Update Course Form Access method
     private Course showCourseForm(Course existingCourse) {
         boolean editMode = existingCourse != null;
         Dialog<Course> dialog = new Dialog<>();

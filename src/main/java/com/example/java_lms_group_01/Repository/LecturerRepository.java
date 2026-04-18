@@ -28,11 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Database access used by lecturer screens.
- * It contains the main lecturer operations such as marks, eligibility,
- * attendance-medical views, materials, student lists, and timetable data.
- */
 public class LecturerRepository {
 
     // Load attendance rows together with any linked medical request for the lecturer's courses.
@@ -406,30 +401,6 @@ public class LecturerRepository {
                 List<String> rows = new ArrayList<>();
                 while (rs.next()) {
                     rows.add(safe(rs.getString("batch")));
-                }
-                return rows;
-            }
-        }
-    }
-
-    public List<String> findStudentRegistrationsByLecturer(String lecturerReg, String batch) throws SQLException {
-        String safeBatch = batch == null ? "" : batch.trim();
-        String sql = "SELECT DISTINCT s.registrationNo "
-                + "FROM student s "
-                + "INNER JOIN enrollment e ON e.studentReg = s.registrationNo "
-                + "INNER JOIN course c ON c.courseCode = e.courseCode "
-                + "WHERE c.lecturerRegistrationNo = ? "
-                + "AND (? = '' OR COALESCE(s.batch, '') = ?) "
-                + "ORDER BY s.registrationNo";
-        Connection connection = DBConnection.getInstance().getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, lecturerReg);
-            statement.setString(2, safeBatch);
-            statement.setString(3, safeBatch);
-            try (ResultSet rs = statement.executeQuery()) {
-                List<String> rows = new ArrayList<>();
-                while (rs.next()) {
-                    rows.add(safe(rs.getString("registrationNo")));
                 }
                 return rows;
             }
