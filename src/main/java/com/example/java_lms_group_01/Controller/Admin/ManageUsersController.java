@@ -1,6 +1,6 @@
 package com.example.java_lms_group_01.Controller.Admin;
 
-import com.example.java_lms_group_01.Repository.UserRepository;
+import com.example.java_lms_group_01.Repository.AdminRepository;
 import com.example.java_lms_group_01.model.UserRecord;
 import com.example.java_lms_group_01.model.users.UserRole;
 import javafx.beans.property.SimpleStringProperty;
@@ -130,7 +130,7 @@ public class ManageUsersController implements Initializable {
     @FXML
     private TableView<UserRecord> tblTechnicalOfficers;
 
-    private final UserRepository userRepository = new UserRepository();
+    private final AdminRepository adminRepository = new AdminRepository();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -614,10 +614,10 @@ public class ManageUsersController implements Initializable {
 
     private void loadAllTables() {
         try {
-            tblAdmins.getItems().setAll(userRepository.findAdmins());
-            tblLecturers.getItems().setAll(userRepository.findLecturers());
-            tblStudents.getItems().setAll(userRepository.findStudents());
-            tblTechnicalOfficers.getItems().setAll(userRepository.findTechnicalOfficers());
+            tblAdmins.getItems().setAll(adminRepository.findAdmins());
+            tblLecturers.getItems().setAll(adminRepository.findLecturers());
+            tblStudents.getItems().setAll(adminRepository.findStudents());
+            tblTechnicalOfficers.getItems().setAll(adminRepository.findTechnicalOfficers());
         } catch (SQLException e) {
             showError("Failed to load user tables.", e);
         }
@@ -625,48 +625,48 @@ public class ManageUsersController implements Initializable {
 
     private boolean addUser(UserRole role, UserRecord row) throws SQLException {
         if (role == UserRole.ADMIN) {
-            return userRepository.createAdmin(row);
+            return adminRepository.createAdmin(row);
         }
         if (role == UserRole.LECTURER) {
-            return userRepository.createLecturer(row);
+            return adminRepository.createLecturer(row);
         }
         if (role == UserRole.STUDENT) {
-            return userRepository.createStudent(row);
+            return adminRepository.createStudent(row);
         }
         if (role == UserRole.TECHNICAL_OFFICER) {
-            return userRepository.createTechnicalOfficer(row);
+            return adminRepository.createTechnicalOfficer(row);
         }
         throw new IllegalArgumentException("Unknown role: " + role);
     }
 
     private boolean updateUser(UserRole role, UserRecord row) throws SQLException {
         if (role == UserRole.ADMIN) {
-            return userRepository.updateAdmin(row);
+            return adminRepository.updateAdmin(row);
         }
         if (role == UserRole.LECTURER) {
-            return userRepository.updateLecturer(row);
+            return adminRepository.updateLecturer(row);
         }
         if (role == UserRole.STUDENT) {
-            return userRepository.updateStudent(row);
+            return adminRepository.updateStudent(row);
         }
         if (role == UserRole.TECHNICAL_OFFICER) {
-            return userRepository.updateTechnicalOfficer(row);
+            return adminRepository.updateTechnicalOfficer(row);
         }
         throw new IllegalArgumentException("Unknown role: " + role);
     }
 
     private boolean deleteUser(UserRole role, String userId) throws SQLException {
         if (role == UserRole.ADMIN) {
-            return userRepository.deleteAdmin(userId);
+            return adminRepository.deleteAdmin(userId);
         }
         if (role == UserRole.LECTURER) {
-            return userRepository.deleteLecturer(userId);
+            return adminRepository.deleteLecturer(userId);
         }
         if (role == UserRole.STUDENT) {
-            return userRepository.deleteStudent(userId);
+            return adminRepository.deleteStudent(userId);
         }
         if (role == UserRole.TECHNICAL_OFFICER) {
-            return userRepository.deleteTechnicalOfficer(userId);
+            return adminRepository.deleteTechnicalOfficer(userId);
         }
         throw new IllegalArgumentException("Unknown role: " + role);
     }

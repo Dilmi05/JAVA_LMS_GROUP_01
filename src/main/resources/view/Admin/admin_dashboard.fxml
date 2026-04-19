@@ -40,6 +40,9 @@
                         <Button fx:id="btnUsers" alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#navUsers" prefHeight="50.0" prefWidth="240.0" style="-fx-background-color: transparent; -fx-cursor: hand;" text="  Manage User Profiles" textFill="WHITE">
                             <font><Font size="14.0" /></font>
                         </Button>
+                        <Button fx:id="btnEnrollments" alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#navEnrollments" prefHeight="50.0" prefWidth="240.0" style="-fx-background-color: transparent; -fx-cursor: hand;" text="  Manage Enrollments" textFill="WHITE">
+                            <font><Font size="14.0" /></font>
+                        </Button>
                         <Button fx:id="btnCourses" alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#navCourses" prefHeight="50.0" prefWidth="240.0" style="-fx-background-color: transparent; -fx-cursor: hand;" text="  Manage Courses" textFill="WHITE">
                             <font><Font size="14.0" /></font>
                         </Button>

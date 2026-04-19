@@ -1,6 +1,6 @@
 package com.example.java_lms_group_01.Controller.Admin;
 
-import com.example.java_lms_group_01.Repository.NoticeRepository;
+import com.example.java_lms_group_01.Repository.AdminRepository;
 import com.example.java_lms_group_01.model.Notice;
 import com.example.java_lms_group_01.util.LoggedInAdmin;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -37,7 +37,7 @@ public class ManageNoticesController implements Initializable {
     @FXML
     private TextField txtSearchNotice;
 
-    private final NoticeRepository noticeRepository = new NoticeRepository();
+    private final AdminRepository adminRepository = new AdminRepository();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -72,9 +72,9 @@ public class ManageNoticesController implements Initializable {
             List<Notice> noticeList;
 
             if (keyword == null || keyword.trim().isEmpty()) {
-                noticeList = noticeRepository.findAll();
+                noticeList = adminRepository.findAllNotices();
             } else {
-                noticeList = noticeRepository.findByKeyword(keyword);
+                noticeList = adminRepository.findNoticesByKeyword(keyword);
             }
 
             tblNotices.getItems().setAll(noticeList);
@@ -91,7 +91,7 @@ public class ManageNoticesController implements Initializable {
         if (newNotice == null) return;
 
         try {
-            boolean isSaved = noticeRepository.save(newNotice);
+            boolean isSaved = adminRepository.saveNotice(newNotice);
 
             if (isSaved) {
                 refreshTable();
@@ -123,7 +123,7 @@ public class ManageNoticesController implements Initializable {
         if (userChoice.isEmpty() || userChoice.get() != ButtonType.OK) return;
 
         try {
-            boolean isDeleted = noticeRepository.deleteById(selectedNotice.getNoticeId());
+            boolean isDeleted = adminRepository.deleteNoticeById(selectedNotice.getNoticeId());
 
             if (isDeleted) {
                 refreshTable();
@@ -150,7 +150,7 @@ public class ManageNoticesController implements Initializable {
         if (updatedNotice == null) return;
 
         try {
-            boolean isUpdated = noticeRepository.update(updatedNotice);
+            boolean isUpdated = adminRepository.updateNotice(updatedNotice);
 
             if (isUpdated) {
                 refreshTable();

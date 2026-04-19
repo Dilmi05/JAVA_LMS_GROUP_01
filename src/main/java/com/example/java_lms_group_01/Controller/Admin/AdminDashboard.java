@@ -30,6 +30,9 @@ public class AdminDashboard {
     private Button btnNotices;
 
     @FXML
+    private Button btnEnrollments;
+
+    @FXML
     private Button btnTimetable;
 
     @FXML
@@ -86,6 +89,11 @@ public class AdminDashboard {
     @FXML
     void navNotices(ActionEvent event) {
         loadSubView("/view/Admin/manage_notices.fxml");
+    }
+
+    @FXML
+    void navEnrollments(ActionEvent event) {
+        loadSubView("/view/Admin/admin_enrollments.fxml");
     }
 
     @FXML

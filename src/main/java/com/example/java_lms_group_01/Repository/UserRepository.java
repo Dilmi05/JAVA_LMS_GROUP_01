@@ -13,10 +13,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Database access used by the admin user-management screens.
- * It works with both the common users table and the role-specific tables.
- */
+
 public class UserRepository {
 
     private final UserImageRepository userImageRepository = new UserImageRepository();

@@ -16,10 +16,6 @@ public class UserProfileRepository {
 
     private final UserImageRepository imageRepo = new UserImageRepository();
 
-    // =========================
-    // LOAD PROFILES
-    // =========================
-
     public UserRecord findStudentProfile(String regNo) throws SQLException {
 
         String sql = "SELECT * FROM users u INNER JOIN student s ON s.registrationNo = u.user_id WHERE s.registrationNo=?";
@@ -120,10 +116,6 @@ public class UserProfileRepository {
                 imageRepo.findImagePathByUserId(connection, regNo)
         );
     }
-
-    // =========================
-    // UPDATE PROFILES
-    // =========================
 
     public void updateStudentProfile(String regNo, String email, String phone, String address,
                                      String image, String currentPw, String newPw) throws SQLException {
@@ -246,10 +238,6 @@ public class UserProfileRepository {
             connection.setAutoCommit(oldAutoCommit);
         }
     }
-
-    // =========================
-    // HELPER METHODS
-    // =========================
 
     private void updatePassword(Connection con, String regNo, String currentPw, String newPw) throws SQLException {
 
