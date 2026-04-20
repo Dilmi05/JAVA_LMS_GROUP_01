@@ -80,7 +80,12 @@ public final class GradeScaleUtil {
         boolean caPassed = meetsCaRequirement(breakdown);
         boolean endPassed = meetsEndRequirement(breakdown);
 
-        if (hasEndComponent && !examPresent) {
+        // Treat entered end-component marks as exam participation when
+        // exam_attendance rows are missing in seed/manual data.
+        boolean hasRecordedEndMarks = breakdown.getEndMarks() > 0;
+        boolean effectiveExamPresent = examPresent || hasRecordedEndMarks;
+
+        if (hasEndComponent && !effectiveExamPresent) {
             return caPassed
                     ? new GradeResult("EE", null)
                     : new GradeResult("E", 0.0);
