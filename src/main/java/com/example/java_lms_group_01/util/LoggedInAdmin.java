@@ -1,5 +1,6 @@
 package com.example.java_lms_group_01.util;
 
+// maintains a class for current Logged User [ get registrationNo for operations ]
 public class LoggedInAdmin {
 
     private static String registrationNo;

@@ -1,6 +1,6 @@
 package com.example.java_lms_group_01.util;
 
-
+// This class is used to store calculated marks for a student [ only contain DATA ]
 public class MarkBreakdown {
     private final double caMarks;
     private final double endMarks;

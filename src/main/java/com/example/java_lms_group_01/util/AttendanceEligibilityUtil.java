@@ -1,5 +1,6 @@
 package com.example.java_lms_group_01.util;
 
+//To check the Attendance Eligibility
 public final class AttendanceEligibilityUtil {
 
     public static final double MIN_ELIGIBILITY_PERCENTAGE = 80.0;

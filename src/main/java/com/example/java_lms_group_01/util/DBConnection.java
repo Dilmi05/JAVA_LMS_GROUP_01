@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+// DB Connection maintain class
 public class DBConnection {
     private static DBConnection instance;
     private Connection connection;
