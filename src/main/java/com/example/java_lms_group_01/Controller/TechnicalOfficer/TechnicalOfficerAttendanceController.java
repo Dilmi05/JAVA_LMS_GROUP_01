@@ -22,6 +22,8 @@ import java.sql.SQLException;
  */
 public class TechnicalOfficerAttendanceController {
 
+    //ui element
+
     @FXML
     private TextField txtStudentRegNo;
     @FXML
@@ -53,6 +55,9 @@ public class TechnicalOfficerAttendanceController {
 
     private final TechnicalOfficerRepository technicalOfficerRepository = new TechnicalOfficerRepository();
 
+
+    //ui open and automatically run
+
     @FXML
     public void initialize() {
         cmbSessionType.setItems(FXCollections.observableArrayList("theory", "practical"));
@@ -80,6 +85,8 @@ public class TechnicalOfficerAttendanceController {
         });
     }
 
+    //add record(add button)
+
     @FXML
     private void addRecord(ActionEvent event) {
         if (!validForm()) {
@@ -93,6 +100,8 @@ public class TechnicalOfficerAttendanceController {
             showError("Failed to add attendance record.", e);
         }
     }
+
+    //update record(update button)
 
     @FXML
     private void updateRecord(ActionEvent event) {
@@ -112,6 +121,9 @@ public class TechnicalOfficerAttendanceController {
         }
     }
 
+
+    //delete record(delete button)
+
     @FXML
     private void deleteRecord(ActionEvent event) {
         Attendance selected = tblAttendance.getSelectionModel().getSelectedItem();
@@ -128,6 +140,9 @@ public class TechnicalOfficerAttendanceController {
         }
     }
 
+
+    //form clear
+
     @FXML
     private void clearForm(ActionEvent event) {
         txtStudentRegNo.clear();
@@ -138,16 +153,22 @@ public class TechnicalOfficerAttendanceController {
         tblAttendance.getSelectionModel().clearSelection();
     }
 
+    //search
+
     @FXML
     private void searchRecords(ActionEvent event) {
         loadAttendance(txtSearch.getText());
     }
+
+    //refresh record(search clear and full data load)
 
     @FXML
     private void refreshRecords(ActionEvent event) {
         txtSearch.clear();
         loadAttendance(null);
     }
+
+    //form validation and warning mzg
 
     private boolean validForm() {
         if (value(txtStudentRegNo).isBlank() || value(txtCourseCode).isBlank() || dpAttendanceDate.getValue() == null
@@ -178,6 +199,8 @@ public class TechnicalOfficerAttendanceController {
         alert.showAndWait();
     }
 
+    //bring data from database and put the table
+
     private void loadAttendance(String keyword) {
         try {
             tblAttendance.getItems().setAll(technicalOfficerRepository.findAttendance(keyword));
@@ -186,10 +209,15 @@ public class TechnicalOfficerAttendanceController {
         }
     }
 
+    //get currunt
+
+
     private String currentTechOfficerReg() {
         String reg = LoggedInTechnicalOfficer.getRegistrationNo();
         return reg == null ? "" : reg.trim();
     }
+
+    //collect form data and create object
 
     private AttendanceRequest buildAttendanceRequest() {
         return new AttendanceRequest(
