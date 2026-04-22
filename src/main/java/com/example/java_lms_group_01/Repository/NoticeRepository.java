@@ -16,17 +16,28 @@ public class NoticeRepository {
 
     public List<Notice> findAll() throws SQLException {
 
-        String sql = "SELECT notice_id, notice_title, notice_content, publishDate, createdBy " +
-                "FROM notice ORDER BY publishDate DESC, notice_id DESC";
+        String sql = "SELECT * FROM notice ORDER BY publishDate DESC, notice_id DESC";
 
         Connection con = DBConnection.getInstance().getConnection();
         PreparedStatement stm = con.prepareStatement(sql);
+
         ResultSet rs = stm.executeQuery();
 
         List<Notice> list = new ArrayList<>();
 
         while (rs.next()) {
-            list.add(mapRow(rs));
+
+            Date publishDate = rs.getDate("publishDate");
+
+            Notice n = new Notice(
+                    rs.getInt("notice_id"),
+                    rs.getString("notice_title"),
+                    rs.getString("notice_content"),
+                    publishDate == null ? null : publishDate.toLocalDate(),
+                    rs.getString("createdBy")
+            );
+
+            list.add(n);
         }
 
         return list;
@@ -34,34 +45,34 @@ public class NoticeRepository {
 
     public List<Notice> findByKeyword(String keyword) throws SQLException {
 
-        String sql = "SELECT notice_id, notice_title, notice_content, publishDate, createdBy FROM notice WHERE 1=1";
-
-        List<String> params = new ArrayList<>();
-
-        if (keyword != null && !keyword.isEmpty()) {
-            sql += " AND (notice_title LIKE ? OR notice_content LIKE ?)";
-
-            String pattern = "%" + keyword + "%";
-
-            params.add(pattern);
-            params.add(pattern);
-        }
-
-        sql += " ORDER BY publishDate DESC, notice_id DESC";
+        String sql = "SELECT * FROM notice WHERE notice_title LIKE ? OR notice_content LIKE ? " +
+                "ORDER BY publishDate DESC, notice_id DESC";
 
         Connection con = DBConnection.getInstance().getConnection();
         PreparedStatement stm = con.prepareStatement(sql);
 
-        for (int i = 0; i < params.size(); i++) {
-            stm.setString(i + 1, params.get(i));
-        }
+        String pattern = "%" + (keyword == null ? "" : keyword) + "%";
+
+        stm.setString(1, pattern);
+        stm.setString(2, pattern);
 
         ResultSet rs = stm.executeQuery();
 
         List<Notice> list = new ArrayList<>();
 
         while (rs.next()) {
-            list.add(mapRow(rs));
+
+            Date publishDate = rs.getDate("publishDate");
+
+            Notice n = new Notice(
+                    rs.getInt("notice_id"),
+                    rs.getString("notice_title"),
+                    rs.getString("notice_content"),
+                    publishDate == null ? null : publishDate.toLocalDate(),
+                    rs.getString("createdBy")
+            );
+
+            list.add(n);
         }
 
         return list;
@@ -74,19 +85,28 @@ public class NoticeRepository {
         Connection con = DBConnection.getInstance().getConnection();
         PreparedStatement stm = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
-        setData(stm, n, false);
+        stm.setString(1, n.getTitle());
+        stm.setString(2, n.getContent());
 
-        boolean saved = stm.executeUpdate() > 0;
+        if (n.getPublishDate() == null) {
+            stm.setDate(3, null);
+        } else {
+            stm.setDate(3, Date.valueOf(n.getPublishDate()));
+        }
 
-        if (saved) {
+        stm.setString(4, n.getCreatedBy());
+
+        int result = stm.executeUpdate();
+
+        if (result > 0) {
             ResultSet rs = stm.getGeneratedKeys();
-
             if (rs.next()) {
                 n.setNoticeId(rs.getInt(1));
             }
+            return true;
         }
 
-        return saved;
+        return false;
     }
 
     public boolean update(Notice n) throws SQLException {
@@ -96,7 +116,17 @@ public class NoticeRepository {
         Connection con = DBConnection.getInstance().getConnection();
         PreparedStatement stm = con.prepareStatement(sql);
 
-        setData(stm, n, true);
+        stm.setString(1, n.getTitle());
+        stm.setString(2, n.getContent());
+
+        if (n.getPublishDate() == null) {
+            stm.setDate(3, null);
+        } else {
+            stm.setDate(3, Date.valueOf(n.getPublishDate()));
+        }
+
+        stm.setString(4, n.getCreatedBy());
+        stm.setInt(5, n.getNoticeId());
 
         return stm.executeUpdate() > 0;
     }
@@ -111,34 +141,5 @@ public class NoticeRepository {
         stm.setInt(1, id);
 
         return stm.executeUpdate() > 0;
-    }
-
-    private void setData(PreparedStatement stm, Notice n, boolean update) throws SQLException {
-
-        if (!update) {
-            stm.setString(1, n.getTitle());
-            stm.setString(2, n.getContent());
-            stm.setDate(3, n.getPublishDate() == null ? null : Date.valueOf(n.getPublishDate()));
-            stm.setString(4, n.getCreatedBy());
-        } else {
-            stm.setString(1, n.getTitle());
-            stm.setString(2, n.getContent());
-            stm.setDate(3, n.getPublishDate() == null ? null : Date.valueOf(n.getPublishDate()));
-            stm.setString(4, n.getCreatedBy());
-            stm.setInt(5, n.getNoticeId());
-        }
-    }
-
-    private Notice mapRow(ResultSet rs) throws SQLException {
-
-        Date publishDate = rs.getDate("publishDate");
-
-        return new Notice(
-                rs.getInt("notice_id"),
-                rs.getString("notice_title"),
-                rs.getString("notice_content"),
-                publishDate == null ? null : publishDate.toLocalDate(),
-                rs.getString("createdBy")
-        );
     }
 }

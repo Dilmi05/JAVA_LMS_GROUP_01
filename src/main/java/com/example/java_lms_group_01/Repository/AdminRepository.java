@@ -151,12 +151,12 @@ public class AdminRepository {
         return timetableRepository.deleteById(timetableId);
     }
 
-
     public List<String> findStudentBatches() throws SQLException {
 
         List<String> list = new ArrayList<>();
 
         Connection con = DBConnection.getInstance().getConnection();
+
         String sql = "SELECT DISTINCT batch FROM student WHERE batch IS NOT NULL ORDER BY batch";
 
         PreparedStatement stm = con.prepareStatement(sql);
@@ -164,8 +164,7 @@ public class AdminRepository {
 
         while (rs.next()) {
             String batch = rs.getString("batch");
-
-            if (batch != null && !batch.equals("")) {
+            if (batch != null && !batch.isEmpty()) {
                 list.add(batch);
             }
         }
@@ -179,8 +178,8 @@ public class AdminRepository {
 
         Connection con = DBConnection.getInstance().getConnection();
 
-        String sql = "SELECT * FROM course WHERE courseCode NOT IN "
-                + "(SELECT courseCode FROM enrollment WHERE studentReg = ?)";
+        String sql = "SELECT * FROM course WHERE courseCode NOT IN " +
+                "(SELECT courseCode FROM enrollment WHERE studentReg = ?)";
 
         PreparedStatement stm = con.prepareStatement(sql);
         stm.setString(1, studentReg);
@@ -188,7 +187,7 @@ public class AdminRepository {
         ResultSet rs = stm.executeQuery();
 
         while (rs.next()) {
-            Course c = new Course(
+            list.add(new Course(
                     rs.getString("courseCode"),
                     rs.getString("name"),
                     rs.getString("lecturerRegistrationNo"),
@@ -196,9 +195,7 @@ public class AdminRepository {
                     rs.getString("semester"),
                     rs.getInt("credit"),
                     rs.getString("course_type")
-            );
-
-            list.add(c);
+            ));
         }
 
         return list;
@@ -210,28 +207,38 @@ public class AdminRepository {
 
         Connection con = DBConnection.getInstance().getConnection();
 
-        String sql = "SELECT s.registrationNo, u.firstName, u.lastName, s.batch, "
-                + "e.enrollment_id, e.courseCode, e.enrollment_date, e.status "
-                + "FROM student s "
-                + "JOIN users u ON u.user_id = s.registrationNo "
-                + "LEFT JOIN enrollment e ON e.studentReg = s.registrationNo WHERE 1=1";
+        String sql = "SELECT s.registrationNo, u.firstName, u.lastName, s.batch, " +
+                "e.enrollment_id, e.courseCode, e.enrollment_date, e.status " +
+                "FROM student s " +
+                "JOIN users u ON u.user_id = s.registrationNo " +
+                "LEFT JOIN enrollment e ON e.studentReg = s.registrationNo " +
+                "WHERE 1=1";
 
-        if (keyword != null && !keyword.equals("")) {
-            sql += " AND s.registrationNo LIKE '%" + keyword + "%'";
+        List<String> params = new ArrayList<>();
+
+        if (keyword != null && !keyword.isEmpty()) {
+            sql += " AND s.registrationNo LIKE ?";
+            params.add("%" + keyword + "%");
         }
 
-        if (batch != null && !batch.equals("") && !batch.equalsIgnoreCase("All")) {
-            sql += " AND s.batch = '" + batch + "'";
+        if (batch != null && !batch.isEmpty() && !batch.equalsIgnoreCase("All")) {
+            sql += " AND s.batch = ?";
+            params.add(batch);
         }
 
         PreparedStatement stm = con.prepareStatement(sql);
+
+        for (int i = 0; i < params.size(); i++) {
+            stm.setString(i + 1, params.get(i));
+        }
+
         ResultSet rs = stm.executeQuery();
 
         while (rs.next()) {
 
             Date date = rs.getDate("enrollment_date");
 
-            EnrollmentRecord e = new EnrollmentRecord(
+            list.add(new EnrollmentRecord(
                     rs.getInt("enrollment_id"),
                     rs.getString("registrationNo"),
                     rs.getString("firstName") + " " + rs.getString("lastName"),
@@ -240,9 +247,7 @@ public class AdminRepository {
                     "",
                     date == null ? null : date.toLocalDate(),
                     rs.getString("status")
-            );
-
-            list.add(e);
+            ));
         }
 
         return list;
@@ -253,41 +258,35 @@ public class AdminRepository {
         Connection con = DBConnection.getInstance().getConnection();
 
         // check student
-        String checkStudent = "SELECT * FROM student WHERE registrationNo = ?";
-        PreparedStatement stm1 = con.prepareStatement(checkStudent);
-        stm1.setString(1, studentReg);
-        ResultSet rs1 = stm1.executeQuery();
-
-        if (!rs1.next()) {
+        PreparedStatement s1 = con.prepareStatement("SELECT 1 FROM student WHERE registrationNo=?");
+        s1.setString(1, studentReg);
+        if (!s1.executeQuery().next()) {
             throw new SQLException("Student not found");
         }
 
         // check course
-        String checkCourse = "SELECT * FROM course WHERE courseCode = ?";
-        PreparedStatement stm2 = con.prepareStatement(checkCourse);
-        stm2.setString(1, courseCode);
-        ResultSet rs2 = stm2.executeQuery();
-
-        if (!rs2.next()) {
+        PreparedStatement s2 = con.prepareStatement("SELECT 1 FROM course WHERE courseCode=?");
+        s2.setString(1, courseCode);
+        if (!s2.executeQuery().next()) {
             throw new SQLException("Course not found");
         }
 
-        // check already enrolled
-        String checkEnroll = "SELECT * FROM enrollment WHERE studentReg=? AND courseCode=?";
-        PreparedStatement stm3 = con.prepareStatement(checkEnroll);
-        stm3.setString(1, studentReg);
-        stm3.setString(2, courseCode);
+        // check existing
+        PreparedStatement s3 = con.prepareStatement(
+                "SELECT 1 FROM enrollment WHERE studentReg=? AND courseCode=?"
+        );
+        s3.setString(1, studentReg);
+        s3.setString(2, courseCode);
 
-        ResultSet rs3 = stm3.executeQuery();
-
-        if (rs3.next()) {
+        if (s3.executeQuery().next()) {
             throw new IllegalArgumentException("Already enrolled");
         }
 
         // insert
-        String sql = "INSERT INTO enrollment VALUES (0, ?, ?, ?, ?)";
+        PreparedStatement stm = con.prepareStatement(
+                "INSERT INTO enrollment(studentReg, courseCode, enrollment_date, status) VALUES (?, ?, ?, ?)"
+        );
 
-        PreparedStatement stm = con.prepareStatement(sql);
         stm.setString(1, studentReg);
         stm.setString(2, courseCode);
         stm.setDate(3, Date.valueOf(LocalDate.now()));
@@ -300,26 +299,24 @@ public class AdminRepository {
 
         Connection con = DBConnection.getInstance().getConnection();
 
-        // check exist
-        String check = "SELECT status FROM enrollment WHERE enrollment_id = ?";
-        PreparedStatement stm1 = con.prepareStatement(check);
-        stm1.setInt(1, enrollmentId);
+        PreparedStatement check = con.prepareStatement(
+                "SELECT status FROM enrollment WHERE enrollment_id=?"
+        );
+        check.setInt(1, enrollmentId);
 
-        ResultSet rs = stm1.executeQuery();
+        ResultSet rs = check.executeQuery();
 
         if (!rs.next()) {
             throw new SQLException("Enrollment not found");
         }
 
-        String current = rs.getString("status");
-
-        if (current.equalsIgnoreCase(status)) {
+        if (rs.getString("status").equalsIgnoreCase(status)) {
             throw new IllegalArgumentException("Same status already set");
         }
 
-        // update
-        String sql = "UPDATE enrollment SET status=? WHERE enrollment_id=?";
-        PreparedStatement stm = con.prepareStatement(sql);
+        PreparedStatement stm = con.prepareStatement(
+                "UPDATE enrollment SET status=? WHERE enrollment_id=?"
+        );
 
         stm.setString(1, status);
         stm.setInt(2, enrollmentId);
@@ -327,39 +324,39 @@ public class AdminRepository {
         return stm.executeUpdate() > 0;
     }
 
-    // ---------------- ENROLL OR UPDATE ----------------
     public boolean enrollStudentToCourse(String studentReg, String courseCode, String status) throws SQLException {
 
         Connection con = DBConnection.getInstance().getConnection();
 
-        // check existing
-        String check = "SELECT status FROM enrollment WHERE studentReg=? AND courseCode=?";
-        PreparedStatement stm1 = con.prepareStatement(check);
-        stm1.setString(1, studentReg);
-        stm1.setString(2, courseCode);
+        PreparedStatement check = con.prepareStatement(
+                "SELECT status FROM enrollment WHERE studentReg=? AND courseCode=?"
+        );
 
-        ResultSet rs = stm1.executeQuery();
+        check.setString(1, studentReg);
+        check.setString(2, courseCode);
+
+        ResultSet rs = check.executeQuery();
 
         if (!rs.next()) {
-            // not exist → create
             if (!status.equalsIgnoreCase("active")) {
-                throw new IllegalArgumentException("New must be active");
+                throw new IllegalArgumentException("New enrollment must be active");
             }
             return createEnrollment(studentReg, courseCode);
         }
 
-        // already exists → update
         if (status.equalsIgnoreCase("active")) {
-            throw new IllegalArgumentException("Cannot set active again");
+            throw new IllegalArgumentException("Already active");
         }
 
-        String sql = "UPDATE enrollment SET status=? WHERE studentReg=? AND courseCode=?";
-        PreparedStatement stm = con.prepareStatement(sql);
+        PreparedStatement update = con.prepareStatement(
+                "UPDATE enrollment SET status=? WHERE studentReg=? AND courseCode=?"
+        );
 
-        stm.setString(1, status);
-        stm.setString(2, studentReg);
-        stm.setString(3, courseCode);
+        update.setString(1, status);
+        update.setString(2, studentReg);
+        update.setString(3, courseCode);
 
-        return stm.executeUpdate() > 0;
+        return update.executeUpdate() > 0;
     }
+
 }

@@ -9,6 +9,8 @@ import java.sql.SQLException;
 
 public class UserImageRepository {
 
+    // method overload here
+
     public String findImagePathByUserId(String userId) throws SQLException {
         Connection connection = DBConnection.getInstance().getConnection();
         return findImagePathByUserId(connection, userId);

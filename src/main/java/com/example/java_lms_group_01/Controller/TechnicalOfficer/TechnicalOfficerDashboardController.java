@@ -20,10 +20,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Main dashboard for technical officers.
- * It shows summary information and loads working pages into the content area.
- */
 public class TechnicalOfficerDashboardController {
 
     @FXML
@@ -45,17 +41,6 @@ public class TechnicalOfficerDashboardController {
     private Label lblUnreadNoticeCount;
 
     @FXML
-    private Label lblUserId;
-
-    @FXML
-    private Label lblDepartment;
-
-    @FXML
-    private Label lblPhone;
-
-    @FXML
-    private Label lblAddress;
-    @FXML
     private ImageView imgProfile;
 
     @FXML
@@ -73,17 +58,12 @@ public class TechnicalOfficerDashboardController {
         setLabelText(lblAttendanceCount, "0");
         setLabelText(lblMedicalCount, "0");
         setLabelText(lblUnreadNoticeCount, "0");
-        setLabelText(lblUserId, "User ID: -");
-        setLabelText(lblDepartment, "Department: -");
-        setLabelText(lblPhone, "Phone: -");
-        setLabelText(lblAddress, "Address: -");
         dashboardHomeNodes.addAll(contentArea.getChildren());
     }
 
     public void setTechnicalOfficerData(String registrationNo) {
         LoggedInTechnicalOfficer.setRegistrationNo(registrationNo);
         setLabelText(lblRegistrationNo, "Registration No: " + registrationNo);
-        setLabelText(lblUserId, "User ID: " + registrationNo);
         loadOfficerDetails(registrationNo);
         loadDashboardCounts();
     }
@@ -170,8 +150,6 @@ public class TechnicalOfficerDashboardController {
             String fullName = (raw(profile.getFirstName()) + " " + raw(profile.getLastName())).trim();
             setLabelText(lblOfficerName, "Name: " + (fullName.isBlank() ? "-" : fullName));
             setLabelText(lblOfficerEmail, "Email: " + safe(profile.getEmail()));
-            setLabelText(lblPhone, "Phone: " + safe(profile.getPhoneNumber()));
-            setLabelText(lblAddress, "Address: " + safe(profile.getAddress()));
             if (imgProfile != null) {
                 ProfileImageUtil.loadImage(imgProfile, profile.getProfileImagePath());
             }

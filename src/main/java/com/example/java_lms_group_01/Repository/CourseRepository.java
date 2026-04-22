@@ -14,8 +14,7 @@ public class CourseRepository {
 
     public List<Course> findByFilters(String department, String keyword) throws SQLException {
 
-        String sql = "SELECT courseCode, name, lecturerRegistrationNo, department, semester, credit, course_type " +
-                "FROM course WHERE 1=1";
+        String sql = "SELECT * FROM course WHERE 1=1";
 
         List<String> params = new ArrayList<>();
 
@@ -26,9 +25,7 @@ public class CourseRepository {
 
         if (keyword != null && !keyword.isEmpty()) {
             sql += " AND (courseCode LIKE ? OR name LIKE ?)";
-
             String pattern = "%" + keyword + "%";
-
             params.add(pattern);
             params.add(pattern);
         }
@@ -47,7 +44,17 @@ public class CourseRepository {
         List<Course> list = new ArrayList<>();
 
         while (rs.next()) {
-            list.add(mapRow(rs));
+            Course c = new Course(
+                    rs.getString("courseCode"),
+                    rs.getString("name"),
+                    rs.getString("lecturerRegistrationNo"),
+                    rs.getString("department"),
+                    rs.getString("semester"),
+                    rs.getInt("credit"),
+                    rs.getString("course_type")
+            );
+
+            list.add(c);
         }
 
         return list;
@@ -55,20 +62,17 @@ public class CourseRepository {
 
     public List<String> findAllDepartments() throws SQLException {
 
-        String sql = "SELECT DISTINCT department FROM course WHERE department IS NOT NULL AND department <> '' ORDER BY department";
+        String sql = "SELECT DISTINCT department FROM course";
 
         Connection con = DBConnection.getInstance().getConnection();
         PreparedStatement stm = con.prepareStatement(sql);
+
         ResultSet rs = stm.executeQuery();
 
         List<String> list = new ArrayList<>();
 
         while (rs.next()) {
-            String dep = rs.getString("department");
-
-            if (dep != null && !dep.isEmpty()) {
-                list.add(dep);
-            }
+            list.add(rs.getString("department"));
         }
 
         return list;
@@ -81,7 +85,13 @@ public class CourseRepository {
         Connection con = DBConnection.getInstance().getConnection();
         PreparedStatement stm = con.prepareStatement(sql);
 
-        setData(stm, c, false);
+        stm.setString(1, c.getCourseCode());
+        stm.setString(2, c.getName());
+        stm.setString(3, c.getLecturerRegistrationNo());
+        stm.setString(4, c.getDepartment());
+        stm.setString(5, c.getSemester());
+        stm.setInt(6, c.getCredit());
+        stm.setString(7, c.getCourseType());
 
         return stm.executeUpdate() > 0;
     }
@@ -93,7 +103,13 @@ public class CourseRepository {
         Connection con = DBConnection.getInstance().getConnection();
         PreparedStatement stm = con.prepareStatement(sql);
 
-        setData(stm, c, true);
+        stm.setString(1, c.getName());
+        stm.setString(2, c.getLecturerRegistrationNo());
+        stm.setString(3, c.getDepartment());
+        stm.setString(4, c.getSemester());
+        stm.setInt(5, c.getCredit());
+        stm.setString(6, c.getCourseType());
+        stm.setString(7, c.getCourseCode());
 
         return stm.executeUpdate() > 0;
     }
@@ -108,39 +124,5 @@ public class CourseRepository {
         stm.setString(1, courseCode);
 
         return stm.executeUpdate() > 0;
-    }
-
-    private void setData(PreparedStatement stm, Course c, boolean update) throws SQLException {
-
-        if (!update) {
-            stm.setString(1, c.getCourseCode());
-            stm.setString(2, c.getName());
-            stm.setString(3, c.getLecturerRegistrationNo());
-            stm.setString(4, c.getDepartment());
-            stm.setString(5, c.getSemester());
-            stm.setInt(6, c.getCredit());
-            stm.setString(7, c.getCourseType());
-        } else {
-            stm.setString(1, c.getName());
-            stm.setString(2, c.getLecturerRegistrationNo());
-            stm.setString(3, c.getDepartment());
-            stm.setString(4, c.getSemester());
-            stm.setInt(5, c.getCredit());
-            stm.setString(6, c.getCourseType());
-            stm.setString(7, c.getCourseCode());
-        }
-    }
-
-    private Course mapRow(ResultSet rs) throws SQLException {
-
-        return new Course(
-                rs.getString("courseCode"),
-                rs.getString("name"),
-                rs.getString("lecturerRegistrationNo"),
-                rs.getString("department"),
-                rs.getString("semester"),
-                rs.getInt("credit"),
-                rs.getString("course_type")
-        );
     }
 }

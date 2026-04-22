@@ -453,4 +453,3 @@ INSERT INTO notice (notice_title, notice_content, publishDate, createdBy) VALUES
 
 INSERT INTO exam_attendance (studentReg, courseCode, status, attendanceDate) VALUES
 ('TG/2023/1701','ICT2132','present','2026-04-10');
-

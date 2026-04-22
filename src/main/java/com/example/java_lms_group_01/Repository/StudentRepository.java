@@ -24,475 +24,431 @@ import java.util.List;
 
 public class StudentRepository {
 
-    public List<Attendance> findAttendanceByStudent(String registrationNo) throws SQLException {
-
-        String sql = "SELECT attendance_id, StudentReg, courseCode, SubmissionDate, session_type, " +
-                "attendance_status, tech_officer_reg " +
-                "FROM attendance " +
-                "WHERE StudentReg = ? " +
-                "ORDER BY SubmissionDate DESC, attendance_id DESC";
-
+    public List<Attendance> findAttendanceByStudent(String regNo) throws SQLException {
         Connection connection = DBConnection.getInstance().getConnection();
-        PreparedStatement statement = connection.prepareStatement(sql);
-        statement.setString(1, registrationNo);
-
-        ResultSet rs = statement.executeQuery();
-
         List<Attendance> list = new ArrayList<>();
 
-        while (rs.next()) {
-            Attendance record = mapAttendanceRecord(rs);
-            list.add(record);
-        }
 
-        return list;
-    }
+        String sql = "SELECT * FROM attendance WHERE StudentReg = ? ORDER BY attendance_id DESC";
 
-    public List<Eligibility> findAttendanceEligibilityByStudent(String registrationNo) throws SQLException {
+        PreparedStatement stmt = connection.prepareStatement(sql);
+        stmt.setString(1, regNo);
 
-        String sql = "SELECT e.courseCode, " +
-                "SUM(CASE " +
-                "WHEN a.attendance_id IS NOT NULL " +
-                "AND (a.attendance_status = 'present' " +
-                "OR (a.attendance_status = 'medical' AND m.approval_status = 'approved')) " +
-                "THEN 1 ELSE 0 END) AS eligible_sessions, " +
-                "COUNT(a.attendance_id) AS total_sessions, " +
-                "MAX(mk.quiz_1) AS quiz_1, " +
-                "MAX(mk.quiz_2) AS quiz_2, " +
-                "MAX(mk.quiz_3) AS quiz_3, " +
-                "MAX(mk.assessment) AS assessment, " +
-                "MAX(mk.Project) AS Project, " +
-                "MAX(mk.mid_term) AS mid_term, " +
-                "MAX(mk.final_theory) AS final_theory, " +
-                "MAX(mk.final_practical) AS final_practical " +
-                "FROM enrollment e " +
-                "LEFT JOIN attendance a ON a.StudentReg = e.studentReg AND a.courseCode = e.courseCode " +
-                "LEFT JOIN medical m ON m.attendance_id = a.attendance_id " +
-                "LEFT JOIN marks mk ON mk.StudentReg = e.studentReg AND mk.courseCode = e.courseCode " +
-                "WHERE e.studentReg = ? " +
-                "GROUP BY e.courseCode " +
-                "ORDER BY e.courseCode";
-
-        Connection connection = DBConnection.getInstance().getConnection();
-        PreparedStatement statement = connection.prepareStatement(sql);
-        statement.setString(1, registrationNo);
-
-        ResultSet rs = statement.executeQuery();
-
-        List<Eligibility> list = new ArrayList<>();
+        ResultSet rs = stmt.executeQuery();
 
         while (rs.next()) {
-            String courseCode = safe(rs.getString("courseCode"));
-
-            MarkBreakdown breakdown =
-                    calculateMarkBreakdown(connection, courseCode, rs);
-
-            double caThreshold = GradeScaleUtil.minimumRequiredMark(breakdown.getCaMaximum());
-            int eligibleSessions = rs.getInt("eligible_sessions");
-            int totalSessions = rs.getInt("total_sessions");
-            boolean attendanceEligible = AttendanceEligibilityUtil.calculatePercentage(
-                    eligibleSessions,
-                    totalSessions
-            ) >= AttendanceEligibilityUtil.MIN_ELIGIBILITY_PERCENTAGE;
-            boolean caEligible = GradeScaleUtil.meetsCaRequirement(breakdown);
-
-            Eligibility record = new Eligibility(
-                    "",
-                    "",
-                    courseCode,
-                    String.valueOf(eligibleSessions),
-                    String.valueOf(totalSessions),
-                    String.format("%.2f%%", AttendanceEligibilityUtil.calculatePercentage(eligibleSessions, totalSessions)),
-                    String.format("%.2f", breakdown.getCaMarks()),
-                    String.format("%.2f", caThreshold),
-                    buildEligibilityStatus(attendanceEligible, caEligible)
+            Attendance a = new Attendance(
+                    String.valueOf(rs.getInt("attendance_id")),
+                    rs.getString("StudentReg"),
+                    rs.getString("courseCode"),
+                    rs.getDate("SubmissionDate") == null ? "" : rs.getDate("SubmissionDate").toString(),
+                    rs.getString("session_type"),
+                    rs.getString("attendance_status"),
+                    rs.getString("tech_officer_reg")
             );
 
-            list.add(record);
+            list.add(a);
         }
 
         return list;
     }
 
-    public List<Course> findCoursesByStudent(String registrationNo) throws SQLException {
-
-        String sql = "SELECT c.courseCode, c.name, c.lecturerRegistrationNo, c.department, " +
-                "c.semester, c.credit, c.course_type, e.status " +
-                "FROM enrollment e " +
-                "INNER JOIN course c ON c.courseCode = e.courseCode " +
-                "WHERE e.studentReg = ? " +
-                "ORDER BY c.courseCode";
+    public List<Eligibility> findAttendanceEligibilityByStudent(String regNo) throws SQLException {
 
         Connection connection = DBConnection.getInstance().getConnection();
-        PreparedStatement statement = connection.prepareStatement(sql);
-        statement.setString(1, registrationNo);
+        List<Eligibility> list = new ArrayList<>();
 
-        ResultSet rs = statement.executeQuery();
+        String sql = "SELECT e.courseCode FROM enrollment e WHERE e.studentReg = ?";
 
-        List<Course> list = new ArrayList<>();
+        PreparedStatement stmt = connection.prepareStatement(sql);
+        stmt.setString(1, regNo);
+
+        ResultSet rs = stmt.executeQuery();
 
         while (rs.next()) {
-            Course record = mapCourseRecord(rs);
-            list.add(record);
+
+            String course = rs.getString("courseCode");
+
+            // TOTAL SESSIONS
+            String totalSql = "SELECT COUNT(*) FROM attendance WHERE StudentReg = ? AND courseCode = ?";
+            PreparedStatement totalStmt = connection.prepareStatement(totalSql);
+            totalStmt.setString(1, regNo);
+            totalStmt.setString(2, course);
+
+            ResultSet totalRs = totalStmt.executeQuery();
+            int totalSessions = totalRs.next() ? totalRs.getInt(1) : 0;
+
+
+            // ELIGIBLE SESSIONS
+            String eligibleSql =
+                    "SELECT COUNT(*) FROM attendance a " +
+                            "LEFT JOIN medical m ON m.attendance_id = a.attendance_id " +
+                            "WHERE a.StudentReg = ? AND a.courseCode = ? " +
+                            "AND (a.attendance_status = 'present' " +
+                            "OR (a.attendance_status = 'medical' AND m.approval_status = 'approved'))";
+
+            PreparedStatement eligibleStmt = connection.prepareStatement(eligibleSql);
+            eligibleStmt.setString(1, regNo);
+            eligibleStmt.setString(2, course);
+
+            ResultSet eligibleRs = eligibleStmt.executeQuery();
+            int eligibleSessions = eligibleRs.next() ? eligibleRs.getInt(1) : 0;
+
+            double attendancePercentage = AttendanceEligibilityUtil.calculatePercentage(
+                    eligibleSessions,
+                    totalSessions
+            );
+
+
+            // CA MARKS + THRESHOLD
+            String markSql =
+                    "SELECT quiz_1, quiz_2, quiz_3, assessment, Project, mid_term, final_theory, final_practical " +
+                            "FROM marks WHERE StudentReg = ? AND courseCode = ?";
+
+            PreparedStatement markStmt = connection.prepareStatement(markSql);
+            markStmt.setString(1, regNo);
+            markStmt.setString(2, course);
+
+            ResultSet markRs = markStmt.executeQuery();
+
+            double caMarks = 0;
+            double caThreshold = 0;
+
+            if (markRs.next()) {
+
+                MarkBreakdown breakdown = AssessmentStructureUtil.calculateMarkBreakdown(
+                        connection,
+                        course,
+                        markRs.getObject("quiz_1") == null ? null : ((Number) markRs.getObject("quiz_1")).doubleValue(),
+                        markRs.getObject("quiz_2") == null ? null : ((Number) markRs.getObject("quiz_2")).doubleValue(),
+                        markRs.getObject("quiz_3") == null ? null : ((Number) markRs.getObject("quiz_3")).doubleValue(),
+                        markRs.getObject("assessment") == null ? null : ((Number) markRs.getObject("assessment")).doubleValue(),
+                        markRs.getObject("Project") == null ? null : ((Number) markRs.getObject("Project")).doubleValue(),
+                        markRs.getObject("mid_term") == null ? null : ((Number) markRs.getObject("mid_term")).doubleValue(),
+                        markRs.getObject("final_theory") == null ? null : ((Number) markRs.getObject("final_theory")).doubleValue(),
+                        markRs.getObject("final_practical") == null ? null : ((Number) markRs.getObject("final_practical")).doubleValue()
+                );
+
+                caMarks = breakdown.getCaMarks();
+                caThreshold = GradeScaleUtil.minimumRequiredMark(breakdown.getCaMaximum());
+            }
+
+
+            //ELIGIBILITY LOGIC
+            boolean attendanceEligible = attendancePercentage >= 80;
+            boolean caEligible = caMarks >= caThreshold;
+
+            String status;
+            if (attendanceEligible && caEligible) {
+                status = "Eligible";
+            } else if (!attendanceEligible && !caEligible) {
+                status = "Attendance + CA Shortage";
+            } else if (!attendanceEligible) {
+                status = "Attendance Shortage";
+            } else {
+                status = "CA Shortage";
+            }
+
+            // Eligibility
+            Eligibility e = new Eligibility(
+                    "",
+                    "",
+                    course,
+                    String.valueOf(eligibleSessions),
+                    String.valueOf(totalSessions),
+                    String.format("%.2f%%", attendancePercentage),
+                    String.format("%.2f", caMarks),
+                    String.format("%.2f", caThreshold),
+                    status
+            );
+
+            list.add(e);
         }
 
         return list;
     }
 
-    public StudentGradeSummary findGradeSummary(String registrationNo) throws SQLException {
-
-        String sql = "SELECT m.StudentReg, m.courseCode, c.name, c.credit, " +
-                "m.quiz_1, m.quiz_2, m.quiz_3, m.assessment, m.Project, m.mid_term, " +
-                "m.final_theory, m.final_practical, " +
-                "(SELECT ea.status FROM exam_attendance ea WHERE ea.studentReg = m.StudentReg " +
-                "AND ea.courseCode = m.courseCode LIMIT 1) AS exam_status, " +
-                "EXISTS (SELECT 1 FROM medical md WHERE md.StudentReg = m.StudentReg " +
-                "AND md.courseCode = m.courseCode AND md.approval_status = 'approved' " +
-                "AND LOWER(COALESCE(md.session_type, '')) = 'exam') AS approved_exam_medical " +
-                "FROM marks m " +
-                "INNER JOIN course c ON c.courseCode = m.courseCode " +
-                "WHERE m.StudentReg = ? " +
-                "ORDER BY m.courseCode";
-
+    public List<Course> findCoursesByStudent(String regNo) throws SQLException {
         Connection connection = DBConnection.getInstance().getConnection();
-        PreparedStatement statement = connection.prepareStatement(sql);
-        statement.setString(1, registrationNo);
+        List<Course> list = new ArrayList<>();
 
-        ResultSet rs = statement.executeQuery();
+        String sql = "SELECT c.*, e.status FROM course c " +
+                "JOIN enrollment e ON c.courseCode = e.courseCode " +
+                "WHERE e.studentReg = ?";
+
+        PreparedStatement stmt = connection.prepareStatement(sql);
+        stmt.setString(1, regNo);
+
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+
+            Course c = new Course(
+                    rs.getString("courseCode"),
+                    rs.getString("name"),
+                    rs.getString("lecturerRegistrationNo"),
+                    rs.getString("department"),
+                    rs.getString("semester"),
+                    rs.getInt("credit"),
+                    rs.getString("course_type")
+            );
+
+            c.setEnrollmentStatus(rs.getString("status"));
+
+            list.add(c);
+        }
+
+        return list;
+    }
+
+    public StudentGradeSummary findGradeSummary(String regNo) throws SQLException {
 
         List<Grade> grades = new ArrayList<>();
 
-        double gpaWeightedPoints = 0.0;
-        int gpaCredits = 0;
-        double sgpaWeightedPoints = 0.0;
+        double cgpaPoints = 0;
+        int cgpaCredits = 0;
+
+        double sgpaPoints = 0;
         int sgpaCredits = 0;
 
         boolean withheld = false;
+
+        String sql =
+                "SELECT m.StudentReg, m.courseCode, c.name, c.credit, " +
+                        "m.quiz_1, m.quiz_2, m.quiz_3, m.assessment, m.Project, m.mid_term, " +
+                        "m.final_theory, m.final_practical, " +
+                        "(SELECT status FROM exam_attendance WHERE studentReg = m.StudentReg AND courseCode = m.courseCode LIMIT 1) AS exam_status " +
+                        "FROM marks m INNER JOIN course c ON c.courseCode = m.courseCode " +
+                        "WHERE m.StudentReg = ?";
+
+        Connection con = DBConnection.getInstance().getConnection();
+        PreparedStatement stmt = con.prepareStatement(sql);
+        stmt.setString(1, regNo);
+
+        ResultSet rs = stmt.executeQuery();
+
         while (rs.next()) {
-            String courseCode = safe(rs.getString("courseCode"));
-            boolean attendanceEligible = isAttendanceEligible(connection, rs.getString("StudentReg"), courseCode);
-            MarkBreakdown breakdown = AssessmentStructureUtil.calculateMarkBreakdown(
-                    connection,
+
+            String courseCode = rs.getString("courseCode");
+            int credit = rs.getInt("credit");
+
+            boolean attendanceOk = isAttendanceEligible(con, regNo, courseCode);
+
+            MarkBreakdown marks = AssessmentStructureUtil.calculateMarkBreakdown(
+                    con,
                     courseCode,
-                    nullableDecimal(rs.getObject("quiz_1")),
-                    nullableDecimal(rs.getObject("quiz_2")),
-                    nullableDecimal(rs.getObject("quiz_3")),
-                    nullableDecimal(rs.getObject("assessment")),
-                    nullableDecimal(rs.getObject("Project")),
-                    nullableDecimal(rs.getObject("mid_term")),
-                    nullableDecimal(rs.getObject("final_theory")),
-                    nullableDecimal(rs.getObject("final_practical"))
+                    toDouble(rs.getObject("quiz_1")),
+                    toDouble(rs.getObject("quiz_2")),
+                    toDouble(rs.getObject("quiz_3")),
+                    toDouble(rs.getObject("assessment")),
+                    toDouble(rs.getObject("Project")),
+                    toDouble(rs.getObject("mid_term")),
+                    toDouble(rs.getObject("final_theory")),
+                    toDouble(rs.getObject("final_practical"))
             );
-            GradeResult gradeResult = GradeScaleUtil.evaluatePublishedGrade(
-                    breakdown,
-                    attendanceEligible,
+
+            GradeResult result = GradeScaleUtil.evaluatePublishedGrade(
+                    marks,
+                    attendanceOk,
                     rs.getString("exam_status"),
-                    rs.getInt("approved_exam_medical") == 1
+                    false
             );
-            if ("MC".equalsIgnoreCase(gradeResult.getPublishedGrade())) {
+
+            if ("MC".equals(result.getPublishedGrade())) {
                 withheld = true;
             }
-            int credit = rs.getInt("credit");
 
             grades.add(new Grade(
                     courseCode,
-                    safe(rs.getString("name")),
-                    String.format("%.2f", breakdown.getEndMarks()),
-                    String.format("%.2f", breakdown.getTotalMarks()),
-                    gradeResult.getPublishedGrade()
+                    rs.getString("name"),
+                    String.valueOf(marks.getEndMarks()),
+                    String.valueOf(marks.getTotalMarks()),
+                    result.getPublishedGrade()
             ));
 
-            if (gradeResult.getGradePoint() != null) {
-                sgpaWeightedPoints += gradeResult.getGradePoint() * credit;
+            if (result.getGradePoint() != null) {
+
+                double gp = result.getGradePoint();
+
+                sgpaPoints += gp * credit;
                 sgpaCredits += credit;
 
-                if (!GradeScaleUtil.isEnglishCourse(courseCode)) {
-                    gpaWeightedPoints += gradeResult.getGradePoint() * credit;
-                    gpaCredits += credit;
-                }
+                cgpaPoints += gp * credit;
+                cgpaCredits += credit;
             }
         }
 
-        double cgpa = 0.0;
-        if (gpaCredits != 0) {
-            cgpa = gpaWeightedPoints / gpaCredits;
-        }
-
-        double sgpa = 0.0;
-        if (sgpaCredits != 0) {
-            sgpa = sgpaWeightedPoints / sgpaCredits;
-        }
+        double cgpa = (cgpaCredits == 0) ? 0 : cgpaPoints / cgpaCredits;
+        double sgpa = (sgpaCredits == 0) ? 0 : sgpaPoints / sgpaCredits;
 
         return new StudentGradeSummary(grades, cgpa, sgpa, withheld);
     }
 
-    public List<Material> findMaterialsByStudent(String registrationNo, String keyword) throws SQLException {
-
-        String safeKeyword = "";
-        if (keyword != null) {
-            safeKeyword = keyword.trim();
-        }
-
-        String sql = "SELECT DISTINCT lm.material_id, lm.courseCode, lm.name, lm.path, lm.material_type " +
-                "FROM lecture_materials lm " +
-                "INNER JOIN enrollment e ON e.courseCode = lm.courseCode " +
-                "WHERE e.studentReg = ? " +
-                "AND (? = '' OR lm.courseCode LIKE ? OR lm.name LIKE ?) " +
-                "ORDER BY lm.courseCode, lm.material_id DESC";
+    public List<Material> findMaterialsByStudent(String regNo, String keyword) throws SQLException {
 
         Connection connection = DBConnection.getInstance().getConnection();
-        PreparedStatement statement = connection.prepareStatement(sql);
-
-        String pattern = "%" + safeKeyword + "%";
-        statement.setString(1, registrationNo);
-        statement.setString(2, safeKeyword);
-        statement.setString(3, pattern);
-        statement.setString(4, pattern);
-
-        ResultSet rs = statement.executeQuery();
-
         List<Material> list = new ArrayList<>();
 
+        // clean keyword
+        String search = (keyword == null) ? "" : keyword.trim();
+        String pattern = "%" + search + "%";
+
+        String sql =
+                "SELECT lm.material_id, lm.courseCode, lm.name, lm.path, lm.material_type " +
+                        "FROM lecture_materials lm " +
+                        "JOIN enrollment e ON e.courseCode = lm.courseCode " +
+                        "WHERE e.studentReg = ? " +
+                        "AND (? = '' OR lm.courseCode LIKE ? OR lm.name LIKE ?) " +
+                        "ORDER BY lm.material_id DESC";
+
+        PreparedStatement stmt = connection.prepareStatement(sql);
+
+        stmt.setString(1, regNo);
+        stmt.setString(2, search);
+        stmt.setString(3, pattern);
+        stmt.setString(4, pattern);
+
+        ResultSet rs = stmt.executeQuery();
+
         while (rs.next()) {
-            Material record = mapMaterialRecord(rs);
-            list.add(record);
+
+            Material m = new Material(
+                    String.valueOf(rs.getInt("material_id")),
+                    rs.getString("courseCode"),
+                    rs.getString("name"),
+                    rs.getString("path"),
+                    rs.getString("material_type")
+            );
+
+            list.add(m);
         }
 
         return list;
     }
 
-    public List<Medical> findMedicalByStudent(String registrationNo) throws SQLException {
-
-        String sql = "SELECT medical_id, StudentReg, courseCode, SubmissionDate, Description, " +
-                "session_type, attendance_id, tech_officer_reg, approval_status " +
-                "FROM medical " +
-                "WHERE StudentReg = ? " +
-                "ORDER BY SubmissionDate DESC, medical_id DESC";
-
+    public List<Medical> findMedicalByStudent(String regNo) throws SQLException {
         Connection connection = DBConnection.getInstance().getConnection();
-        PreparedStatement statement = connection.prepareStatement(sql);
-        statement.setString(1, registrationNo);
-
-        ResultSet rs = statement.executeQuery();
-
         List<Medical> list = new ArrayList<>();
 
+        String sql = "SELECT * FROM medical WHERE StudentReg = ? ORDER BY medical_id DESC";
+
+        PreparedStatement stmt = connection.prepareStatement(sql);
+        stmt.setString(1, regNo);
+
+        ResultSet rs = stmt.executeQuery();
+
         while (rs.next()) {
-            Medical record = mapMedicalRecord(rs);
-            list.add(record);
+
+            Medical m = new Medical(
+                    String.valueOf(rs.getInt("medical_id")),
+                    rs.getString("StudentReg"),
+                    rs.getString("courseCode"),
+                    rs.getDate("SubmissionDate") == null ? "" : rs.getDate("SubmissionDate").toString(),
+                    rs.getString("Description"),
+                    rs.getString("session_type"),
+                    String.valueOf(rs.getInt("attendance_id")),
+                    rs.getString("approval_status"),
+                    rs.getString("tech_officer_reg")
+            );
+
+            list.add(m);
         }
 
         return list;
     }
 
-    public List<Timetable> findTimetableByStudent(String registrationNo) throws SQLException {
-
+    public List<Timetable> findTimetableByStudent(String regNo) throws SQLException {
         Connection connection = DBConnection.getInstance().getConnection();
-
-        String department = findStudentDepartment(connection, registrationNo);
-
-        if (department.isBlank()) {
-            return new ArrayList<>();
-        }
-
         List<Timetable> list = new ArrayList<>();
 
-        boolean found = loadTimetableRows(connection, department, "timetable", list);
+        // Get student department
+        String department = findStudentDepartment(connection,regNo);
 
-        if (!found) {
-            loadTimetableRows(connection, department, "timeTable", list);
+        if (department == null || department.isEmpty()) {
+            return list;
+        }
+
+        // Get timetable for that department
+        String sql = "SELECT * FROM timetable WHERE department = ? ORDER BY day, start_time";
+
+        PreparedStatement stmt = connection.prepareStatement(sql);
+        stmt.setString(1, department);
+
+        ResultSet rs = stmt.executeQuery();
+
+        // Convert DB rows to objects
+        while (rs.next()) {
+
+            Timetable t = new Timetable(
+                    rs.getString("time_table_id"),
+                    rs.getString("department"),
+                    rs.getString("lec_id"),
+                    rs.getString("courseCode"),
+                    rs.getString("admin_id"),
+                    rs.getString("day"),
+                    rs.getTime("start_time") == null ? null : rs.getTime("start_time").toLocalTime(),
+                    rs.getTime("end_time") == null ? null : rs.getTime("end_time").toLocalTime(),
+                    rs.getString("session_type")
+            );
+
+            list.add(t);
         }
 
         return list;
     }
-
-    private Attendance mapAttendanceRecord(ResultSet rs) throws SQLException {
-        return new Attendance(
-                String.valueOf(rs.getInt("attendance_id")),
-                safe(rs.getString("StudentReg")),
-                safe(rs.getString("courseCode")),
-                dateToString(rs.getDate("SubmissionDate")),
-                safe(rs.getString("session_type")),
-                safe(rs.getString("attendance_status")),
-                safe(rs.getString("tech_officer_reg"))
-        );
-    }
-
-    private Course mapCourseRecord(ResultSet rs) throws SQLException {
-        Course course = new Course(
-                safe(rs.getString("courseCode")),
-                safe(rs.getString("name")),
-                safe(rs.getString("lecturerRegistrationNo")),
-                safe(rs.getString("department")),
-                safe(rs.getString("semester")),
-                rs.getInt("credit"),
-                safe(rs.getString("course_type"))
-        );
-        course.setEnrollmentStatus(safe(rs.getString("status")));
-        return course;
-    }
-
-    private Material mapMaterialRecord(ResultSet rs) throws SQLException {
-        return new Material(
-                String.valueOf(rs.getInt("material_id")),
-                safe(rs.getString("courseCode")),
-                safe(rs.getString("name")),
-                safe(rs.getString("path")),
-                safe(rs.getString("material_type"))
-        );
-    }
-
-    private Medical mapMedicalRecord(ResultSet rs) throws SQLException {
-        return new Medical(
-                String.valueOf(rs.getInt("medical_id")),
-                safe(rs.getString("StudentReg")),
-                safe(rs.getString("courseCode")),
-                dateToString(rs.getDate("SubmissionDate")),
-                safe(rs.getString("Description")),
-                safe(rs.getString("session_type")),
-                String.valueOf(rs.getInt("attendance_id")),
-                safe(rs.getString("approval_status")),
-                safe(rs.getString("tech_officer_reg"))
-        );
-    }
-
-    private String findStudentDepartment(Connection connection, String regNo) throws SQLException {
+    
+    private String findStudentDepartment(Connection con, String regNo) throws SQLException {
 
         String sql = "SELECT department FROM student WHERE registrationNo = ?";
 
-        PreparedStatement statement = connection.prepareStatement(sql);
-        statement.setString(1, regNo);
+        PreparedStatement stmt = con.prepareStatement(sql);
+        stmt.setString(1, regNo);
 
-        ResultSet rs = statement.executeQuery();
+        ResultSet rs = stmt.executeQuery();
 
         if (rs.next()) {
-            return safe(rs.getString("department"));
+            return rs.getString("department");
         }
 
         return "";
     }
 
-    private boolean isAttendanceEligible(Connection connection, String studentReg, String courseCode) throws SQLException {
+    private boolean isAttendanceEligible(Connection con, String studentReg, String courseCode) throws SQLException {
 
-        String sql = "SELECT COALESCE(SUM(CASE " +
-                "WHEN a.attendance_status = 'present' THEN 1 " +
-                "WHEN a.attendance_status = 'medical' AND EXISTS (" +
-                "SELECT 1 FROM medical m WHERE m.attendance_id = a.attendance_id " +
-                "AND m.approval_status = 'approved') THEN 1 " +
-                "ELSE 0 END), 0) AS eligible_sessions, " +
-                "COUNT(*) AS total_sessions " +
-                "FROM attendance a " +
-                "WHERE a.StudentReg = ? AND a.courseCode = ?";
+        String sql =
+                "SELECT " +
+                        "SUM(CASE " +
+                        "WHEN a.attendance_status = 'present' THEN 1 " +
+                        "WHEN a.attendance_status = 'medical' AND EXISTS (" +
+                        "SELECT 1 FROM medical m WHERE m.attendance_id = a.attendance_id " +
+                        "AND m.approval_status = 'approved') THEN 1 " +
+                        "ELSE 0 END) AS eligible_sessions, " +
+                        "COUNT(*) AS total_sessions " +
+                        "FROM attendance a " +
+                        "WHERE a.StudentReg = ? AND a.courseCode = ?";
 
-        PreparedStatement statement = connection.prepareStatement(sql);
-        statement.setString(1, studentReg);
-        statement.setString(2, courseCode);
+        PreparedStatement stmt = con.prepareStatement(sql);
+        stmt.setString(1, studentReg);
+        stmt.setString(2, courseCode);
 
-        ResultSet rs = statement.executeQuery();
+        ResultSet rs = stmt.executeQuery();
 
         if (!rs.next()) {
             return false;
         }
 
-        double percentage = AttendanceEligibilityUtil.calculatePercentage(
-                rs.getInt("eligible_sessions"),
-                rs.getInt("total_sessions")
-        );
+        int eligible = rs.getInt("eligible_sessions");
+        int total = rs.getInt("total_sessions");
 
-        return percentage >= AttendanceEligibilityUtil.MIN_ELIGIBILITY_PERCENTAGE;
+        double percentage = (total == 0)
+                ? 0
+                : (eligible * 100.0 / total);
+
+        return percentage >= 80; // minimum required attendance
     }
 
-    private MarkBreakdown calculateMarkBreakdown(Connection connection, String courseCode,
-                                                 ResultSet rs) throws SQLException {
-        return AssessmentStructureUtil.calculateMarkBreakdown(
-                connection,
-                courseCode,
-                nullableDecimal(rs.getObject("quiz_1")),
-                nullableDecimal(rs.getObject("quiz_2")),
-                nullableDecimal(rs.getObject("quiz_3")),
-                nullableDecimal(rs.getObject("assessment")),
-                nullableDecimal(rs.getObject("Project")),
-                nullableDecimal(rs.getObject("mid_term")),
-                nullableDecimal(rs.getObject("final_theory")),
-                nullableDecimal(rs.getObject("final_practical"))
-        );
-    }
-
-    private boolean loadTimetableRows(Connection connection, String department,
-                                      String tableName, List<Timetable> rows) throws SQLException {
-
-        String sql = "SELECT t.time_table_id, t.department, t.lec_id, t.courseCode, t.admin_id, " +
-                "t.day, t.start_time, t.end_time, t.session_type " +
-                "FROM " + tableName + " t " +
-                "WHERE t.department = ? " +
-                "ORDER BY t.day, t.start_time";
-
-        try {
-            PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setString(1, department);
-
-            ResultSet rs = statement.executeQuery();
-
-            while (rs.next()) {
-                rows.add(mapTimetableRecord(rs));
-            }
-
-            return true;
-
-        } catch (SQLException e) {
-            if (e.getMessage() != null && e.getMessage().toLowerCase().contains("doesn't exist")) {
-                return false;
-            }
-
-            throw e;
-        }
-    }
-
-    private Timetable mapTimetableRecord(ResultSet rs) throws SQLException {
-        return new Timetable(
-                safe(rs.getString("time_table_id")),
-                safe(rs.getString("department")),
-                safe(rs.getString("lec_id")),
-                safe(rs.getString("courseCode")),
-                safe(rs.getString("admin_id")),
-                safe(rs.getString("day")),
-                rs.getTime("start_time") == null ? null : rs.getTime("start_time").toLocalTime(),
-                rs.getTime("end_time") == null ? null : rs.getTime("end_time").toLocalTime(),
-                safe(rs.getString("session_type"))
-        );
-    }
-
-    private static String safe(String value) {
-        if (value == null) {
-            return "";
-        }
-        return value;
-    }
-
-    private static String dateToString(java.sql.Date date) {
-        if (date == null) {
-            return "";
-        }
-        return date.toString();
-    }
-
-    private static Double nullableDecimal(Object value) {
-        if (value == null) {
-            return null;
-        }
+    private Double toDouble(Object value) {
+        if (value == null) return null;
         return ((Number) value).doubleValue();
-    }
-
-    private String buildEligibilityStatus(boolean attendanceEligible, boolean caEligible) {
-        if (attendanceEligible && caEligible) {
-            return "Eligible";
-        }
-        if (!attendanceEligible && !caEligible) {
-            return "Attendance + CA Shortage";
-        }
-        if (!attendanceEligible) {
-            return "Attendance Shortage";
-        }
-        return "CA Shortage";
     }
 }

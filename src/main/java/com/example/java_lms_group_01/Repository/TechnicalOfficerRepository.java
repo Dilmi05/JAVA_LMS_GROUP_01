@@ -1,332 +1,322 @@
 package com.example.java_lms_group_01.Repository;
 
-import com.example.java_lms_group_01.model.Attendance;
-import com.example.java_lms_group_01.model.ExamAttendance;
-import com.example.java_lms_group_01.model.Medical;
-import com.example.java_lms_group_01.model.request.AttendanceRequest;
-import com.example.java_lms_group_01.model.request.ExamAttendanceRequest;
-import com.example.java_lms_group_01.model.request.MedicalRequest;
+import com.example.java_lms_group_01.model.*;
+import com.example.java_lms_group_01.model.request.*;
 import com.example.java_lms_group_01.util.DBConnection;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TechnicalOfficerRepository {
 
-    public void addExamAttendance(ExamAttendanceRequest request) throws SQLException {
-        String sql = "INSERT INTO exam_attendance (studentReg, courseCode, status, attendanceDate) VALUES (?, ?, ?, ?)";
-        Connection connection = DBConnection.getInstance().getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            bindExamAttendanceRequest(statement, request);
-            statement.executeUpdate();
-        }
+    // EXAM ATTENDANCE
+    public void addExamAttendance(ExamAttendanceRequest r) throws SQLException {
+
+        Connection con = DBConnection.getInstance().getConnection();
+
+        PreparedStatement stmt = con.prepareStatement(
+                "INSERT INTO exam_attendance (studentReg, courseCode, status, attendanceDate) VALUES (?, ?, ?, ?)"
+        );
+
+        stmt.setString(1, r.getStudentRegNo());
+        stmt.setString(2, r.getCourseCode());
+        stmt.setString(3, r.getStatus());
+        stmt.setDate(4, Date.valueOf(r.getAttendanceDate()));
+
+        stmt.executeUpdate();
     }
 
-    public void updateExamAttendance(int examAttendanceId, ExamAttendanceRequest request) throws SQLException {
-        String sql = "UPDATE exam_attendance SET studentReg = ?, courseCode = ?, status = ?, attendanceDate = ? WHERE exam_attendance_id = ?";
-        Connection connection = DBConnection.getInstance().getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            bindExamAttendanceRequest(statement, request);
-            statement.setInt(5, examAttendanceId);
-            statement.executeUpdate();
-        }
+    public void updateExamAttendance(int id, ExamAttendanceRequest r) throws SQLException {
+
+        Connection con = DBConnection.getInstance().getConnection();
+
+        PreparedStatement stmt = con.prepareStatement(
+                "UPDATE exam_attendance SET studentReg=?, courseCode=?, status=?, attendanceDate=? WHERE exam_attendance_id=?"
+        );
+
+        stmt.setString(1, r.getStudentRegNo());
+        stmt.setString(2, r.getCourseCode());
+        stmt.setString(3, r.getStatus());
+        stmt.setDate(4, Date.valueOf(r.getAttendanceDate()));
+        stmt.setInt(5, id);
+
+        stmt.executeUpdate();
     }
 
-    public void deleteExamAttendance(int examAttendanceId) throws SQLException {
-        String sql = "DELETE FROM exam_attendance WHERE exam_attendance_id = ?";
-        Connection connection = DBConnection.getInstance().getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, examAttendanceId);
-            statement.executeUpdate();
-        }
+    public void deleteExamAttendance(int id) throws SQLException {
+
+        Connection con = DBConnection.getInstance().getConnection();
+
+        PreparedStatement stmt = con.prepareStatement(
+                "DELETE FROM exam_attendance WHERE exam_attendance_id=?"
+        );
+
+        stmt.setInt(1, id);
+        stmt.executeUpdate();
     }
 
     public List<ExamAttendance> findExamAttendance(String keyword) throws SQLException {
-        String safeKeyword = keyword == null ? "" : keyword.trim();
-        String sql = "SELECT exam_attendance_id, studentReg, courseCode, status, attendanceDate "
-                + "FROM exam_attendance "
-                + "ORDER BY exam_attendance_id DESC";
-        if (!safeKeyword.isEmpty()) {
-            sql = "SELECT exam_attendance_id, studentReg, courseCode, status, attendanceDate "
-                    + "FROM exam_attendance "
-                    + "WHERE studentReg LIKE ? OR courseCode LIKE ? "
-                    + "ORDER BY exam_attendance_id DESC";
+
+        Connection con = DBConnection.getInstance().getConnection();
+
+        String sql = "SELECT * FROM exam_attendance";
+
+        if (keyword != null && !keyword.isEmpty()) {
+            sql += " WHERE studentReg LIKE ? OR courseCode LIKE ?";
         }
-        Connection connection = DBConnection.getInstance().getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            if (!safeKeyword.isEmpty()) {
-                String pattern = "%" + safeKeyword + "%";
-                statement.setString(1, pattern);
-                statement.setString(2, pattern);
-            }
-            try (ResultSet rs = statement.executeQuery()) {
-                List<ExamAttendance> rows = new ArrayList<>();
-                while (rs.next()) {
-                    rows.add(mapExamAttendanceRecord(rs));
-                }
-                return rows;
-            }
+
+        sql += " ORDER BY exam_attendance_id DESC";
+
+        PreparedStatement stmt = con.prepareStatement(sql);
+
+        if (keyword != null && !keyword.isEmpty()) {
+            String k = "%" + keyword + "%";
+            stmt.setString(1, k);
+            stmt.setString(2, k);
         }
+
+        ResultSet rs = stmt.executeQuery();
+
+        List<ExamAttendance> list = new ArrayList<>();
+
+        while (rs.next()) {
+            list.add(new ExamAttendance(
+                    String.valueOf(rs.getInt("exam_attendance_id")),
+                    rs.getString("studentReg"),
+                    rs.getString("courseCode"),
+                    rs.getString("status"),
+                    rs.getDate("attendanceDate") == null ? "" : rs.getDate("attendanceDate").toString()
+            ));
+        }
+
+        return list;
     }
 
 
-    public void addAttendance(AttendanceRequest request) throws SQLException {
-        String sql = "INSERT INTO attendance (StudentReg, courseCode, tech_officer_reg, SubmissionDate, session_type, attendance_status) VALUES (?, ?, ?, ?, ?, ?)";
-        Connection connection = DBConnection.getInstance().getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            bindAttendanceRequest(statement, request);
-            statement.executeUpdate();
-        }
+    // ATTENDANCE
+    public void addAttendance(AttendanceRequest r) throws SQLException {
+
+        Connection con = DBConnection.getInstance().getConnection();
+
+        PreparedStatement stmt = con.prepareStatement(
+                "INSERT INTO attendance (StudentReg, courseCode, tech_officer_reg, SubmissionDate, session_type, attendance_status) VALUES (?, ?, ?, ?, ?, ?)"
+        );
+
+        stmt.setString(1, r.getStudentRegNo());
+        stmt.setString(2, r.getCourseCode());
+        stmt.setString(3, r.getTechOfficerReg());
+        stmt.setDate(4, Date.valueOf(r.getSubmissionDate()));
+        stmt.setString(5, r.getSessionType());
+        stmt.setString(6, r.getStatus());
+
+        stmt.executeUpdate();
     }
 
-    public void updateAttendance(int attendanceId, AttendanceRequest request) throws SQLException {
-        String sql = "UPDATE attendance SET StudentReg = ?, courseCode = ?, SubmissionDate = ?, session_type = ?, attendance_status = ?, tech_officer_reg = ? WHERE attendance_id = ?";
-        Connection connection = DBConnection.getInstance().getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            bindAttendanceRequest(statement, request);
-            statement.setInt(7, attendanceId);
-            statement.executeUpdate();
-        }
+    public void updateAttendance(int id, AttendanceRequest r) throws SQLException {
+
+        Connection con = DBConnection.getInstance().getConnection();
+
+        PreparedStatement stmt = con.prepareStatement(
+                "UPDATE attendance SET StudentReg=?, courseCode=?, SubmissionDate=?, session_type=?, attendance_status=?, tech_officer_reg=? WHERE attendance_id=?"
+        );
+
+        stmt.setString(1, r.getStudentRegNo());
+        stmt.setString(2, r.getCourseCode());
+        stmt.setDate(3, Date.valueOf(r.getSubmissionDate()));
+        stmt.setString(4, r.getSessionType());
+        stmt.setString(5, r.getStatus());
+        stmt.setString(6, r.getTechOfficerReg());
+        stmt.setInt(7, id);
+
+        stmt.executeUpdate();
     }
 
-    public void deleteAttendance(int attendanceId) throws SQLException {
-        String sql = "DELETE FROM attendance WHERE attendance_id = ?";
-        Connection connection = DBConnection.getInstance().getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, attendanceId);
-            statement.executeUpdate();
-        }
+    public void deleteAttendance(int id) throws SQLException {
+
+        Connection con = DBConnection.getInstance().getConnection();
+
+        PreparedStatement stmt = con.prepareStatement(
+                "DELETE FROM attendance WHERE attendance_id=?"
+        );
+
+        stmt.setInt(1, id);
+        stmt.executeUpdate();
     }
 
     public List<Attendance> findAttendance(String keyword) throws SQLException {
-        String safeKeyword = keyword == null ? "" : keyword.trim();
-        String sql = "SELECT attendance_id, StudentReg, courseCode, SubmissionDate, session_type, attendance_status, tech_officer_reg "
-                + "FROM attendance "
-                + "WHERE (? = '' OR StudentReg LIKE ? OR courseCode LIKE ?) "
-                + "ORDER BY attendance_id DESC";
-        Connection connection = DBConnection.getInstance().getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            String pattern = "%" + safeKeyword + "%";
-            statement.setString(1, safeKeyword);
-            statement.setString(2, pattern);
-            statement.setString(3, pattern);
-            try (ResultSet rs = statement.executeQuery()) {
-                List<Attendance> rows = new ArrayList<>();
-                while (rs.next()) {
-                    rows.add(mapAttendanceRecord(rs));
-                }
-                return rows;
-            }
+
+        Connection con = DBConnection.getInstance().getConnection();
+
+        String sql = "SELECT * FROM attendance";
+
+        if (keyword != null && !keyword.isEmpty()) {
+            sql += " WHERE StudentReg LIKE ? OR courseCode LIKE ?";
         }
+
+        sql += " ORDER BY attendance_id DESC";
+
+        PreparedStatement stmt = con.prepareStatement(sql);
+
+        if (keyword != null && !keyword.isEmpty()) {
+            String k = "%" + keyword + "%";
+            stmt.setString(1, k);
+            stmt.setString(2, k);
+        }
+
+        ResultSet rs = stmt.executeQuery();
+
+        List<Attendance> list = new ArrayList<>();
+
+        while (rs.next()) {
+            list.add(new Attendance(
+                    String.valueOf(rs.getInt("attendance_id")),
+                    rs.getString("StudentReg"),
+                    rs.getString("courseCode"),
+                    rs.getDate("SubmissionDate") == null ? "" : rs.getDate("SubmissionDate").toString(),
+                    rs.getString("session_type"),
+                    rs.getString("attendance_status"),
+                    rs.getString("tech_officer_reg")
+            ));
+        }
+
+        return list;
     }
 
-    public void addMedical(MedicalRequest request) throws SQLException {
-        Connection connection = DBConnection.getInstance().getConnection();
-        ensureMedicalAttendance(connection, request);
-        executeMedicalUpsert(connection, request, null);
+
+    // MEDICAL
+    public void addMedical(MedicalRequest r) throws SQLException {
+
+        Connection con = DBConnection.getInstance().getConnection();
+
+        PreparedStatement stmt = con.prepareStatement(
+                "INSERT INTO medical (StudentReg, courseCode, tech_officer_reg, SubmissionDate, Description, session_type, attendance_id, approval_status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')"
+        );
+
+        stmt.setString(1, r.getStudentRegNo());
+        stmt.setString(2, r.getCourseCode());
+        stmt.setString(3, r.getTechOfficerReg());
+        stmt.setDate(4, Date.valueOf(r.getSubmissionDate()));
+        stmt.setString(5, r.getDescription());
+        stmt.setString(6, r.getSessionType());
+        stmt.setInt(7, r.getAttendanceId());
+
+        stmt.executeUpdate();
+
+        PreparedStatement update = con.prepareStatement(
+                "UPDATE attendance SET attendance_status='medical' WHERE attendance_id=?"
+        );
+
+        update.setInt(1, r.getAttendanceId());
+        update.executeUpdate();
     }
 
-    public void updateMedical(int medicalId, MedicalRequest request) throws SQLException {
-        Connection connection = DBConnection.getInstance().getConnection();
-        ensureMedicalAttendance(connection, request);
-        executeMedicalUpsert(connection, request, medicalId);
+    public void updateMedical(int id, MedicalRequest r) throws SQLException {
+
+        Connection con = DBConnection.getInstance().getConnection();
+
+        PreparedStatement stmt = con.prepareStatement(
+                "UPDATE medical SET StudentReg=?, courseCode=?, tech_officer_reg=?, SubmissionDate=?, Description=?, session_type=?, attendance_id=? WHERE medical_id=?"
+        );
+
+        stmt.setString(1, r.getStudentRegNo());
+        stmt.setString(2, r.getCourseCode());
+        stmt.setString(3, r.getTechOfficerReg());
+        stmt.setDate(4, Date.valueOf(r.getSubmissionDate()));
+        stmt.setString(5, r.getDescription());
+        stmt.setString(6, r.getSessionType());
+        stmt.setInt(7, r.getAttendanceId());
+        stmt.setInt(8, id);
+
+        stmt.executeUpdate();
     }
 
     public void deleteMedical(int medicalId, int attendanceId) throws SQLException {
-        Connection connection = DBConnection.getInstance().getConnection();
-        boolean previousAutoCommit = connection.getAutoCommit();
-        connection.setAutoCommit(false);
-        try (PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM medical WHERE medical_id = ?");
-             PreparedStatement attendanceStatement = connection.prepareStatement("UPDATE attendance SET attendance_status = 'absent' WHERE attendance_id = ?")) {
-            deleteStatement.setInt(1, medicalId);
-            deleteStatement.executeUpdate();
-            attendanceStatement.setInt(1, attendanceId);
-            attendanceStatement.executeUpdate();
-            connection.commit();
-        } catch (SQLException e) {
-            connection.rollback();
-            throw e;
-        } catch (Exception e) {
-            connection.rollback();
-            throw new SQLException(e.getMessage(), e);
-        } finally {
-            connection.setAutoCommit(previousAutoCommit);
-        }
+
+        Connection con = DBConnection.getInstance().getConnection();
+
+        PreparedStatement m = con.prepareStatement(
+                "DELETE FROM medical WHERE medical_id=?"
+        );
+
+        m.setInt(1, medicalId);
+        m.executeUpdate();
+
+        PreparedStatement a = con.prepareStatement(
+                "UPDATE attendance SET attendance_status='absent' WHERE attendance_id=?"
+        );
+
+        a.setInt(1, attendanceId);
+        a.executeUpdate();
     }
 
     public List<Medical> findMedical(String keyword) throws SQLException {
-        String safeKeyword = keyword == null ? "" : keyword.trim();
-        String sql = "SELECT medical_id, StudentReg, courseCode, SubmissionDate, Description, session_type, attendance_id, tech_officer_reg, approval_status "
-                + "FROM medical "
-                + "WHERE (? = '' OR StudentReg LIKE ? OR courseCode LIKE ?) "
-                + "ORDER BY medical_id DESC";
-        Connection connection = DBConnection.getInstance().getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            String pattern = "%" + safeKeyword + "%";
-            statement.setString(1, safeKeyword);
-            statement.setString(2, pattern);
-            statement.setString(3, pattern);
-            try (ResultSet rs = statement.executeQuery()) {
-                List<Medical> rows = new ArrayList<>();
-                while (rs.next()) {
-                    rows.add(mapMedicalRecord(rs));
-                }
-                return rows;
-            }
+
+        List<Medical> list = new ArrayList<>();
+
+        String sql = "SELECT medical_id, StudentReg, courseCode, SubmissionDate, Description, session_type, attendance_id, tech_officer_reg, approval_status " +
+                "FROM medical " +
+                "WHERE StudentReg LIKE ? OR courseCode LIKE ? " +
+                "ORDER BY medical_id DESC";
+
+        Connection con = DBConnection.getInstance().getConnection();
+        PreparedStatement stmt = con.prepareStatement(sql);
+
+        String search = "%" + (keyword == null ? "" : keyword) + "%";
+
+        stmt.setString(1, search);
+        stmt.setString(2, search);
+
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+
+            Medical m = new Medical(
+                    String.valueOf(rs.getInt("medical_id")),
+                    rs.getString("StudentReg"),
+                    rs.getString("courseCode"),
+                    rs.getDate("SubmissionDate") == null ? "" : rs.getDate("SubmissionDate").toString(),
+                    rs.getString("Description"),
+                    rs.getString("session_type"),
+                    String.valueOf(rs.getInt("attendance_id")),
+                    rs.getString("approval_status"),
+                    rs.getString("tech_officer_reg")
+            );
+
+            list.add(m);
         }
+
+        return list;
     }
 
+
+    // COUNTS of Attendance AND Medical AND Notices
     public int countAttendance() throws SQLException {
-        return fetchCount("SELECT COUNT(*) FROM attendance");
+        return count("attendance");
     }
 
     public int countMedical() throws SQLException {
-        return fetchCount("SELECT COUNT(*) FROM medical");
+        return count("medical");
     }
 
     public int countNotices() throws SQLException {
-        return fetchCount("SELECT COUNT(*) FROM notice");
+        return count("notice");
     }
 
-    private void ensureMedicalAttendance(Connection connection, MedicalRequest request) throws SQLException {
-        String sql = "SELECT attendance_id "
-                + "FROM attendance "
-                + "WHERE attendance_id = ? "
-                + "AND StudentReg = ? "
-                + "AND courseCode = ? "
-                + "AND session_type = ?";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, request.getAttendanceId());
-            statement.setString(2, request.getStudentRegNo());
-            statement.setString(3, request.getCourseCode());
-            statement.setString(4, request.getSessionType());
-            try (ResultSet rs = statement.executeQuery()) {
-                if (!rs.next()) {
-                    throw new SQLException("Attendance record does not match the given student, course, and session type.");
-                }
-            }
-        }
-    }
+    private int count(String table) throws SQLException {
 
-    private void executeMedicalUpsert(Connection connection, MedicalRequest request, Integer medicalId) throws SQLException {
-        String insertSql = "INSERT INTO medical (StudentReg, courseCode, tech_officer_reg, SubmissionDate, Description, session_type, attendance_id, approval_status, approved_by_lecturer, approved_at) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', NULL, NULL)";
-        String updateSql = "UPDATE medical "
-                + "SET StudentReg = ?, courseCode = ?, tech_officer_reg = ?, SubmissionDate = ?, Description = ?, session_type = ?, attendance_id = ?, "
-                + "approval_status = 'pending', approved_by_lecturer = NULL, approved_at = NULL "
-                + "WHERE medical_id = ?";
-        String attendanceSql = "UPDATE attendance SET attendance_status = 'medical', tech_officer_reg = ? WHERE attendance_id = ?";
-        String medicalSql = insertSql;
-        if (medicalId != null) {
-            medicalSql = updateSql;
-        }
-        boolean previousAutoCommit = connection.getAutoCommit();
-        connection.setAutoCommit(false);
-        try (PreparedStatement medicalStatement = connection.prepareStatement(medicalSql);
-             PreparedStatement attendanceStatement = connection.prepareStatement(attendanceSql)) {
-            bindMedicalRequest(medicalStatement, request);
-            if (medicalId != null) {
-                medicalStatement.setInt(8, medicalId);
-            }
-            medicalStatement.executeUpdate();
+        Connection con = DBConnection.getInstance().getConnection();
 
-            attendanceStatement.setString(1, request.getTechOfficerReg());
-            attendanceStatement.setInt(2, request.getAttendanceId());
-            attendanceStatement.executeUpdate();
-            connection.commit();
-        } catch (SQLException e) {
-            connection.rollback();
-            throw e;
-        } catch (Exception e) {
-            connection.rollback();
-            throw new SQLException(e.getMessage(), e);
-        } finally {
-            connection.setAutoCommit(previousAutoCommit);
-        }
-    }
-
-    private void bindAttendanceRequest(PreparedStatement statement, AttendanceRequest request) throws SQLException {
-        statement.setString(1, request.getStudentRegNo());
-        statement.setString(2, request.getCourseCode());
-        statement.setString(3, request.getTechOfficerReg());
-        statement.setDate(4, Date.valueOf(request.getSubmissionDate()));
-        statement.setString(5, request.getSessionType());
-        statement.setString(6, request.getStatus());
-    }
-
-    private void bindExamAttendanceRequest(PreparedStatement statement, ExamAttendanceRequest request) throws SQLException {
-        statement.setString(1, request.getStudentRegNo());
-        statement.setString(2, request.getCourseCode());
-        statement.setString(3, request.getStatus());
-        statement.setDate(4, Date.valueOf(request.getAttendanceDate()));
-    }
-
-    private void bindMedicalRequest(PreparedStatement statement, MedicalRequest request) throws SQLException {
-        statement.setString(1, request.getStudentRegNo());
-        statement.setString(2, request.getCourseCode());
-        statement.setString(3, request.getTechOfficerReg());
-        statement.setDate(4, Date.valueOf(request.getSubmissionDate()));
-        statement.setString(5, request.getDescription());
-        statement.setString(6, request.getSessionType());
-        statement.setInt(7, request.getAttendanceId());
-    }
-
-    private int fetchCount(String sql) throws SQLException {
-        Connection connection = DBConnection.getInstance().getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet rs = statement.executeQuery()) {
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-            return 0;
-        }
-    }
-
-    private Attendance mapAttendanceRecord(ResultSet rs) throws SQLException {
-        Date submissionDate = rs.getDate("SubmissionDate");
-        return new Attendance(
-                String.valueOf(rs.getInt("attendance_id")),
-                safe(rs.getString("StudentReg")),
-                safe(rs.getString("courseCode")),
-                submissionDate == null ? "" : submissionDate.toString(),
-                safe(rs.getString("session_type")),
-                safe(rs.getString("attendance_status")),
-                safe(rs.getString("tech_officer_reg"))
+        PreparedStatement stmt = con.prepareStatement(
+                "SELECT COUNT(*) FROM " + table
         );
-    }
 
-    private Medical mapMedicalRecord(ResultSet rs) throws SQLException {
-        Date submissionDate = rs.getDate("SubmissionDate");
-        return new Medical(
-                String.valueOf(rs.getInt("medical_id")),
-                safe(rs.getString("StudentReg")),
-                safe(rs.getString("courseCode")),
-                submissionDate == null ? "" : submissionDate.toString(),
-                safe(rs.getString("Description")),
-                safe(rs.getString("session_type")),
-                String.valueOf(rs.getInt("attendance_id")),
-                safe(rs.getString("approval_status")),
-                safe(rs.getString("tech_officer_reg"))
-        );
-    }
+        ResultSet rs = stmt.executeQuery();
 
-    private ExamAttendance mapExamAttendanceRecord(ResultSet rs) throws SQLException {
-        Date attendanceDate = rs.getDate("attendanceDate");
-        return new ExamAttendance(
-                String.valueOf(rs.getInt("exam_attendance_id")),
-                safe(rs.getString("studentReg")),
-                safe(rs.getString("courseCode")),
-                safe(rs.getString("status")),
-                attendanceDate == null ? "" : attendanceDate.toString()
-        );
-    }
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
 
-    private static String safe(String value) {
-        return value == null ? "" : value;
+        return 0;
     }
 }
