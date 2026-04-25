@@ -211,7 +211,7 @@ public class ManageTimetablesController implements Initializable {
         TextField txtStartTime = new TextField(edit ? timeText(existing.getStartTime()) : "");
         TextField txtEndTime = new TextField(edit ? timeText(existing.getEndTime()) : "");
         ComboBox<String> cmbSessionType = new ComboBox<>();
-        cmbSessionType.getItems().addAll("theory", "practical","both");
+        cmbSessionType.getItems().addAll("theory", "practical");
         cmbSessionType.setValue(edit ? text(existing.getSessionType()) : null);
 
         GridPane grid = new GridPane();

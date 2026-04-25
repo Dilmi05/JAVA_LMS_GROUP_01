@@ -20,8 +20,7 @@ public class StudentGradePageController {
     private TableColumn<Grade, String> colCourseCode;
     @FXML
     private TableColumn<Grade, String> colCourseName;
-    @FXML
-    private TableColumn<Grade, String> colFinalMarks;
+
     @FXML
     private TableColumn<Grade, String> colTotalMarks;
     @FXML
@@ -42,7 +41,6 @@ public class StudentGradePageController {
     private void setupColumns() {
         colCourseCode.setCellValueFactory(d -> d.getValue().courseCodeProperty());
         colCourseName.setCellValueFactory(d -> d.getValue().courseNameProperty());
-        colFinalMarks.setCellValueFactory(d -> d.getValue().finalMarksProperty());
         colTotalMarks.setCellValueFactory(d -> d.getValue().totalProperty());
         colGrade.setCellValueFactory(d -> d.getValue().gradeProperty());
     }

@@ -1,35 +1,27 @@
 package com.example.java_lms_group_01.util;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
-// DB Connection maintain class
 public class DBConnection {
-    private static DBConnection instance;
-    private Connection connection;
+    private static final String URL = "jdbc:mysql://localhost:3306/lms02";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "2003";
 
-    private DBConnection() throws SQLException {
-        try {
-            this.connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/lms02", "root", "2003");
-            System.out.println("Database connected successfully!");
-        } catch (SQLException e) {
-            System.out.println("Failed to connect to database!");
-            throw e;
-        }
+    private static DBConnection instance;
+
+    private DBConnection() {
     }
 
-    public static DBConnection getInstance() throws SQLException {
+    public static synchronized DBConnection getInstance() {
         if (instance == null) {
             instance = new DBConnection();
         }
         return instance;
     }
 
-    public Connection getConnection() {
-        return connection;
+    public Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USERNAME, PASSWORD);
     }
 }

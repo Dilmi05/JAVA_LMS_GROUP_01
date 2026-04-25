@@ -13,7 +13,6 @@
         <columns>
             <TableColumn fx:id="colCourseCode" text="Course Code" prefWidth="180"/>
             <TableColumn fx:id="colCourseName" text="Course Name" prefWidth="260"/>
-            <TableColumn fx:id="colFinalMarks" text="Final Marks" prefWidth="120"/>
             <TableColumn fx:id="colTotalMarks" text="Total Marks" prefWidth="120"/>
             <TableColumn fx:id="colGrade" text="Grade" prefWidth="140"/>
         </columns>

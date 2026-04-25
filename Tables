@@ -281,7 +281,7 @@ INSERT INTO assessment_structure (courseCode, component, weight) VALUES
 
 -- 5. ENROLLMENT (200 rows - every student is enrolled in every course BEFORE marks are added)
 INSERT INTO enrollment (studentReg, courseCode, status, enrollment_date) VALUES
-('TG/2023/1701','ENG2122','enrolled','2026-01-15'),('TG/2023/1701','ICT2113','enrolled','2026-01-15'),('TG/2023/1701','ICT2122','enrolled','2026-01-15'),('TG/2023/1701','ICT2132','enrolled','2026-01-15'),('TG/2023/1701','ICT2142','enrolled','2026-01-15'),('TG/2023/1701','ICT2152','enrolled','2026-01-15'),('TG/2023/1701','TCS2112','enrolled','2026-01-15'),('TG/2023/1701','TCS2122','enrolled','2026-01-15');
+('TG/2023/1701','ENG2122','active','2026-01-15'),('TG/2023/1701','ICT2113','active','2026-01-15'),('TG/2023/1701','ICT2122','active','2026-01-15'),('TG/2023/1701','ICT2132','active','2026-01-15'),('TG/2023/1701','ICT2142','active','2026-01-15'),('TG/2023/1701','ICT2152','active','2026-01-15'),('TG/2023/1701','TCS2112','active','2026-01-15'),('TG/2023/1701','TCS2122','active','2026-01-15');
 
 -- 6. MARKS
 INSERT INTO marks (LectureReg, StudentReg, courseCode, quiz_1, quiz_2, quiz_3, assessment, Project, mid_term, final_theory, final_practical) VALUES
