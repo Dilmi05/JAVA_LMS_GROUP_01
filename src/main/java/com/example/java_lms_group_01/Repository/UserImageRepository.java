@@ -7,13 +7,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Stores and retrieves profile image paths for users.
+ */
 public class UserImageRepository {
 
-    // method overload here
-
     public String findImagePathByUserId(String userId) throws SQLException {
-        Connection connection = DBConnection.getInstance().getConnection();
-        return findImagePathByUserId(connection, userId);
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
+            return findImagePathByUserId(connection, userId);
+        }
     }
 
     public String findImagePathByUserId(Connection connection, String userId) throws SQLException {

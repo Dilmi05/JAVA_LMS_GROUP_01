@@ -4,545 +4,767 @@ import com.example.java_lms_group_01.model.UserRecord;
 import com.example.java_lms_group_01.util.DBConnection;
 import com.example.java_lms_group_01.util.PasswordUtil;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Manages user CRUD and profile updates across all user roles.
+ */
 public class UserRepository {
 
     private final UserImageRepository userImageRepository = new UserImageRepository();
 
-    // Find All Admins
     public List<UserRecord> findAdmins() throws SQLException {
-        List<UserRecord> list = new ArrayList<>();
+        String sql = "SELECT u.user_id, u.firstName, u.lastName, u.email, u.address, u.phoneNumber, u.dateOfBirth, u.gender, a.registrationNo FROM users u INNER JOIN admin a ON u.user_id = a.registrationNo ORDER BY a.registrationNo";
 
-        Connection con = DBConnection.getInstance().getConnection();
-        String sql = "SELECT * FROM users u JOIN admin a ON u.user_id = a.registrationNo";
-
-        PreparedStatement stmt = con.prepareStatement(sql);
-        ResultSet rs = stmt.executeQuery();
-
-        while (rs.next()) {
-            UserRecord u = new UserRecord(
-                    rs.getString("user_id"),
-                    rs.getString("firstName"),
-                    rs.getString("lastName"),
-                    rs.getString("email"),
-                    rs.getString("address"),
-                    rs.getString("phoneNumber"),
-                    rs.getDate("dateOfBirth") == null ? null : rs.getDate("dateOfBirth").toLocalDate(),
-                    rs.getString("gender"),
-                    "Admin",
-                    rs.getString("registrationNo"),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-            );
-            list.add(u);
+        try (Connection connection = DBConnection.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet rs = statement.executeQuery()) {
+            List<UserRecord> list = new ArrayList<>();
+            while (rs.next()) {
+                Date dob = rs.getDate("dateOfBirth");
+                list.add(new UserRecord(
+                        rs.getString("user_id"),
+                        rs.getString("firstName"),
+                        rs.getString("lastName"),
+                        rs.getString("email"),
+                        rs.getString("address"),
+                        rs.getString("phoneNumber"),
+                        dob == null ? null : dob.toLocalDate(),
+                        rs.getString("gender"),
+                        "Admin",
+                        rs.getString("registrationNo"),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
+                ));
+            }
+            return list;
         }
-
-        return list;
     }
 
-    // Find All Lecturers
     public List<UserRecord> findLecturers() throws SQLException {
-        List<UserRecord> list = new ArrayList<>();
+        String sql = "SELECT u.user_id, u.firstName, u.lastName, u.email, u.address, u.phoneNumber, u.dateOfBirth, u.gender, l.registrationNo, l.department, l.position FROM users u INNER JOIN lecturer l ON u.user_id = l.registrationNo ORDER BY l.registrationNo";
 
-        Connection con = DBConnection.getInstance().getConnection();
-        String sql = "SELECT * FROM users u JOIN lecturer l ON u.user_id = l.registrationNo";
-
-        PreparedStatement stmt = con.prepareStatement(sql);
-        ResultSet rs = stmt.executeQuery();
-
-        while (rs.next()) {
-            UserRecord u = new UserRecord(
-                    rs.getString("user_id"),
-                    rs.getString("firstName"),
-                    rs.getString("lastName"),
-                    rs.getString("email"),
-                    rs.getString("address"),
-                    rs.getString("phoneNumber"),
-                    rs.getDate("dateOfBirth") == null ? null : rs.getDate("dateOfBirth").toLocalDate(),
-                    rs.getString("gender"),
-                    "Lecturer",
-                    rs.getString("registrationNo"),
-                    null,
-                    rs.getString("department"),
-                    null,
-                    null,
-                    null,
-                    rs.getString("position"),
-                    null
-            );
-            list.add(u);
+        try (Connection connection = DBConnection.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet rs = statement.executeQuery()) {
+            List<UserRecord> list = new ArrayList<>();
+            while (rs.next()) {
+                Date dob = rs.getDate("dateOfBirth");
+                list.add(new UserRecord(
+                        rs.getString("user_id"),
+                        rs.getString("firstName"),
+                        rs.getString("lastName"),
+                        rs.getString("email"),
+                        rs.getString("address"),
+                        rs.getString("phoneNumber"),
+                        dob == null ? null : dob.toLocalDate(),
+                        rs.getString("gender"),
+                        "Lecturer",
+                        rs.getString("registrationNo"),
+                        null,
+                        rs.getString("department"),
+                        null,
+                        null,
+                        null,
+                        rs.getString("position"),
+                        null
+                ));
+            }
+            return list;
         }
-
-        return list;
     }
 
-    // Find All Students
     public List<UserRecord> findStudents() throws SQLException {
-        List<UserRecord> list = new ArrayList<>();
+        String sql = "SELECT u.user_id, u.firstName, u.lastName, u.email, u.address, u.phoneNumber, u.dateOfBirth, u.gender, s.registrationNo, s.department, s.batch, s.GPA, s.status FROM users u INNER JOIN student s ON u.user_id = s.registrationNo ORDER BY s.registrationNo";
 
-        Connection con = DBConnection.getInstance().getConnection();
-        String sql = "SELECT * FROM users u JOIN student s ON u.user_id = s.registrationNo";
-
-        PreparedStatement stmt = con.prepareStatement(sql);
-        ResultSet rs = stmt.executeQuery();
-
-        while (rs.next()) {
-            UserRecord u = new UserRecord(
-                    rs.getString("user_id"),
-                    rs.getString("firstName"),
-                    rs.getString("lastName"),
-                    rs.getString("email"),
-                    rs.getString("address"),
-                    rs.getString("phoneNumber"),
-                    rs.getDate("dateOfBirth") == null ? null : rs.getDate("dateOfBirth").toLocalDate(),
-                    rs.getString("gender"),
-                    "Student",
-                    rs.getString("registrationNo"),
-                    null,
-                    rs.getString("department"),
-                    rs.getString("batch"),
-                    rs.getDouble("GPA"),
-                    rs.getString("status"),
-                    null,
-                    null
-            );
-            list.add(u);
+        try (Connection connection = DBConnection.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet rs = statement.executeQuery()) {
+            List<UserRecord> list = new ArrayList<>();
+            while (rs.next()) {
+                Date dob = rs.getDate("dateOfBirth");
+                list.add(new UserRecord(
+                        rs.getString("user_id"),
+                        rs.getString("firstName"),
+                        rs.getString("lastName"),
+                        rs.getString("email"),
+                        rs.getString("address"),
+                        rs.getString("phoneNumber"),
+                        dob == null ? null : dob.toLocalDate(),
+                        rs.getString("gender"),
+                        "Student",
+                        rs.getString("registrationNo"),
+                        null,
+                        rs.getString("department"),
+                        rs.getString("batch"),
+                        rs.getObject("GPA") == null ? null : ((Number) rs.getObject("GPA")).doubleValue(),
+                        rs.getString("status"),
+                        null,
+                        null
+                ));
+            }
+            return list;
         }
-
-        return list;
     }
 
-    // Find All Technical Officers
     public List<UserRecord> findTechnicalOfficers() throws SQLException {
-        List<UserRecord> list = new ArrayList<>();
+        String sql = "SELECT u.user_id, u.firstName, u.lastName, u.email, u.address, u.phoneNumber, u.dateOfBirth, u.gender, t.registrationNo, t.department FROM users u INNER JOIN tech_officer t ON u.user_id = t.registrationNo ORDER BY t.registrationNo";
 
-        Connection con = DBConnection.getInstance().getConnection();
-        String sql = "SELECT * FROM users u JOIN tech_officer t ON u.user_id = t.registrationNo";
-
-        PreparedStatement stmt = con.prepareStatement(sql);
-        ResultSet rs = stmt.executeQuery();
-
-        while (rs.next()) {
-            UserRecord u = new UserRecord(
-                    rs.getString("user_id"),
-                    rs.getString("firstName"),
-                    rs.getString("lastName"),
-                    rs.getString("email"),
-                    rs.getString("address"),
-                    rs.getString("phoneNumber"),
-                    rs.getDate("dateOfBirth") == null ? null : rs.getDate("dateOfBirth").toLocalDate(),
-                    rs.getString("gender"),
-                    "TechnicalOfficer",
-                    rs.getString("registrationNo"),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-            );
-            list.add(u);
+        try (Connection connection = DBConnection.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet rs = statement.executeQuery()) {
+            List<UserRecord> list = new ArrayList<>();
+            while (rs.next()) {
+                Date dob = rs.getDate("dateOfBirth");
+                list.add(new UserRecord(
+                        rs.getString("user_id"),
+                        rs.getString("firstName"),
+                        rs.getString("lastName"),
+                        rs.getString("email"),
+                        rs.getString("address"),
+                        rs.getString("phoneNumber"),
+                        dob == null ? null : dob.toLocalDate(),
+                        rs.getString("gender"),
+                        "TechnicalOfficer",
+                        rs.getString("registrationNo"),
+                        null,
+                        rs.getString("department"),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
+                ));
+            }
+            return list;
         }
-
-        return list;
     }
 
-    // Create Admin
     public boolean createAdmin(UserRecord row) throws SQLException {
-        Connection con = DBConnection.getInstance().getConnection();
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
+            connection.setAutoCommit(false);
 
-        try {
-            // Insert into users
-            PreparedStatement u = con.prepareStatement(
-                    "INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            u.setString(1, row.getRegistrationNo());
-            u.setString(2, row.getFirstName());
-            u.setString(3, row.getLastName());
-            u.setString(4, row.getEmail());
-            u.setString(5, row.getAddress());
-            u.setString(6, row.getPhoneNumber());
-            u.setDate(7, row.getDateOfBirth() == null ? null : Date.valueOf(row.getDateOfBirth()));
-            u.setString(8, row.getGender());
-            u.executeUpdate();
+            try {
+                try (PreparedStatement userStatement = connection.prepareStatement("INSERT INTO users (user_id, firstName, lastName, email, address, phoneNumber, dateOfBirth, gender) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+                    userStatement.setString(1, row.getRegistrationNo());
+                    userStatement.setString(2, row.getFirstName());
+                    userStatement.setString(3, row.getLastName());
+                    userStatement.setString(4, row.getEmail());
+                    userStatement.setString(5, row.getAddress());
+                    userStatement.setString(6, row.getPhoneNumber());
+                    if (row.getDateOfBirth() == null) userStatement.setNull(7, Types.DATE); else userStatement.setDate(7, Date.valueOf(row.getDateOfBirth()));
+                    userStatement.setString(8, row.getGender());
+                    userStatement.executeUpdate();
+                }
 
-            // Insert into admin
-            PreparedStatement a = con.prepareStatement(
-                    "INSERT INTO admin VALUES (?, ?)");
-            a.setString(1, row.getRegistrationNo());
-            a.setString(2, PasswordUtil.hashPassword(row.getPassword()));
-            a.executeUpdate();
-
-            return true;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+                try (PreparedStatement adminStatement = connection.prepareStatement("INSERT INTO admin (registrationNo, password) VALUES (?, ?)")) {
+                    adminStatement.setString(1, row.getRegistrationNo());
+                    adminStatement.setString(2, PasswordUtil.hashPassword(row.getPassword()));
+                    boolean inserted = adminStatement.executeUpdate() > 0;
+                    connection.commit();
+                    return inserted;
+                }
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+            }
         }
     }
 
-    // Create Lecturer
     public boolean createLecturer(UserRecord row) throws SQLException {
-        Connection con = DBConnection.getInstance().getConnection();
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
+            connection.setAutoCommit(false);
 
-        try {
-            PreparedStatement u = con.prepareStatement(
-                    "INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            u.setString(1, row.getRegistrationNo());
-            u.setString(2, row.getFirstName());
-            u.setString(3, row.getLastName());
-            u.setString(4, row.getEmail());
-            u.setString(5, row.getAddress());
-            u.setString(6, row.getPhoneNumber());
-            u.setDate(7, row.getDateOfBirth() == null ? null : Date.valueOf(row.getDateOfBirth()));
-            u.setString(8, row.getGender());
-            u.executeUpdate();
+            try {
+                try (PreparedStatement userStatement = connection.prepareStatement("INSERT INTO users (user_id, firstName, lastName, email, address, phoneNumber, dateOfBirth, gender) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+                    userStatement.setString(1, row.getRegistrationNo());
+                    userStatement.setString(2, row.getFirstName());
+                    userStatement.setString(3, row.getLastName());
+                    userStatement.setString(4, row.getEmail());
+                    userStatement.setString(5, row.getAddress());
+                    userStatement.setString(6, row.getPhoneNumber());
+                    if (row.getDateOfBirth() == null) userStatement.setNull(7, Types.DATE); else userStatement.setDate(7, Date.valueOf(row.getDateOfBirth()));
+                    userStatement.setString(8, row.getGender());
+                    userStatement.executeUpdate();
+                }
 
-            PreparedStatement l = con.prepareStatement(
-                    "INSERT INTO lecturer VALUES (?, ?, ?, ?)");
-            l.setString(1, row.getRegistrationNo());
-            l.setString(2, PasswordUtil.hashPassword(row.getPassword()));
-            l.setString(3, row.getDepartment());
-            l.setString(4, row.getPosition());
-            l.executeUpdate();
-
-            return true;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+                try (PreparedStatement lecturerStatement = connection.prepareStatement("INSERT INTO lecturer (registrationNo, password, department, position) VALUES (?, ?, ?, ?)")) {
+                    lecturerStatement.setString(1, row.getRegistrationNo());
+                    lecturerStatement.setString(2, PasswordUtil.hashPassword(row.getPassword()));
+                    lecturerStatement.setString(3, row.getDepartment());
+                    lecturerStatement.setString(4, row.getPosition());
+                    boolean inserted = lecturerStatement.executeUpdate() > 0;
+                    connection.commit();
+                    return inserted;
+                }
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+            }
         }
     }
 
-    // Create Student
     public boolean createStudent(UserRecord row) throws SQLException {
-        Connection con = DBConnection.getInstance().getConnection();
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
+            connection.setAutoCommit(false);
 
-        try {
-            PreparedStatement u = con.prepareStatement(
-                    "INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            u.setString(1, row.getRegistrationNo());
-            u.setString(2, row.getFirstName());
-            u.setString(3, row.getLastName());
-            u.setString(4, row.getEmail());
-            u.setString(5, row.getAddress());
-            u.setString(6, row.getPhoneNumber());
-            u.setDate(7, row.getDateOfBirth() == null ? null : Date.valueOf(row.getDateOfBirth()));
-            u.setString(8, row.getGender());
-            u.executeUpdate();
+            try {
+                try (PreparedStatement userStatement = connection.prepareStatement("INSERT INTO users (user_id, firstName, lastName, email, address, phoneNumber, dateOfBirth, gender) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+                    userStatement.setString(1, row.getRegistrationNo());
+                    userStatement.setString(2, row.getFirstName());
+                    userStatement.setString(3, row.getLastName());
+                    userStatement.setString(4, row.getEmail());
+                    userStatement.setString(5, row.getAddress());
+                    userStatement.setString(6, row.getPhoneNumber());
+                    if (row.getDateOfBirth() == null) userStatement.setNull(7, Types.DATE); else userStatement.setDate(7, Date.valueOf(row.getDateOfBirth()));
+                    userStatement.setString(8, row.getGender());
+                    userStatement.executeUpdate();
+                }
 
-            PreparedStatement s = con.prepareStatement(
-                    "INSERT INTO student VALUES (?, ?, ?, ?, ?, ?)");
-            s.setString(1, row.getRegistrationNo());
-            s.setString(2, PasswordUtil.hashPassword(row.getPassword()));
-            s.setString(3, row.getDepartment());
-            s.setString(4, row.getBatch());
-            s.setDouble(5, row.getGpa() == null ? 0 : row.getGpa());
-            s.setString(6, row.getStatus());
-            s.executeUpdate();
-
-            return true;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+                try (PreparedStatement studentStatement = connection.prepareStatement("INSERT INTO student (registrationNo, password, department, batch, GPA, status) VALUES (?, ?, ?, ?, ?, ?)")) {
+                    studentStatement.setString(1, row.getRegistrationNo());
+                    studentStatement.setString(2, PasswordUtil.hashPassword(row.getPassword()));
+                    studentStatement.setString(3, row.getDepartment());
+                    studentStatement.setString(4, row.getBatch());
+                    if (row.getGpa() == null) studentStatement.setNull(5, Types.DECIMAL); else studentStatement.setDouble(5, row.getGpa());
+                    studentStatement.setString(6, row.getStatus());
+                    boolean inserted = studentStatement.executeUpdate() > 0;
+                    connection.commit();
+                    return inserted;
+                }
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+            }
         }
     }
 
-    // Create Technical Officer
     public boolean createTechnicalOfficer(UserRecord row) throws SQLException {
-        Connection con = DBConnection.getInstance().getConnection();
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
+            connection.setAutoCommit(false);
 
-        try {
-            PreparedStatement u = con.prepareStatement(
-                    "INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            u.setString(1, row.getRegistrationNo());
-            u.setString(2, row.getFirstName());
-            u.setString(3, row.getLastName());
-            u.setString(4, row.getEmail());
-            u.setString(5, row.getAddress());
-            u.setString(6, row.getPhoneNumber());
-            u.setDate(7, row.getDateOfBirth() == null ? null : Date.valueOf(row.getDateOfBirth()));
-            u.setString(8, row.getGender());
-            u.executeUpdate();
+            try {
+                try (PreparedStatement userStatement = connection.prepareStatement("INSERT INTO users (user_id, firstName, lastName, email, address, phoneNumber, dateOfBirth, gender) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+                    userStatement.setString(1, row.getRegistrationNo());
+                    userStatement.setString(2, row.getFirstName());
+                    userStatement.setString(3, row.getLastName());
+                    userStatement.setString(4, row.getEmail());
+                    userStatement.setString(5, row.getAddress());
+                    userStatement.setString(6, row.getPhoneNumber());
+                    if (row.getDateOfBirth() == null) userStatement.setNull(7, Types.DATE); else userStatement.setDate(7, Date.valueOf(row.getDateOfBirth()));
+                    userStatement.setString(8, row.getGender());
+                    userStatement.executeUpdate();
+                }
 
-            PreparedStatement t = con.prepareStatement(
-                    "INSERT INTO tech_officer VALUES (?, ?,?)");
-            t.setString(1, row.getRegistrationNo());
-            t.setString(2, PasswordUtil.hashPassword(row.getPassword()));
-            t.setString(3, row.getDepartment());
-            t.executeUpdate();
-
-            return true;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+                try (PreparedStatement technicalOfficerStatement = connection.prepareStatement("INSERT INTO tech_officer (registrationNo, password, department) VALUES (?, ?, ?)")) {
+                    technicalOfficerStatement.setString(1, row.getRegistrationNo());
+                    technicalOfficerStatement.setString(2, PasswordUtil.hashPassword(row.getPassword()));
+                    technicalOfficerStatement.setString(3, row.getDepartment());
+                    boolean inserted = technicalOfficerStatement.executeUpdate() > 0;
+                    connection.commit();
+                    return inserted;
+                }
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+            }
         }
     }
 
-    // Update Admin
     public boolean updateAdmin(UserRecord row) throws SQLException {
-        Connection con = DBConnection.getInstance().getConnection();
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
+            connection.setAutoCommit(false);
 
-        try {
-            // Update users table
-            PreparedStatement u = con.prepareStatement(
-                    "UPDATE users SET firstName=?, lastName=?, email=?, address=?, phoneNumber=?, dateOfBirth=?, gender=? WHERE user_id=?");
+            try {
+                try (PreparedStatement userStatement = connection.prepareStatement("UPDATE users SET firstName=?, lastName=?, email=?, address=?, phoneNumber=?, dateOfBirth=?, gender=? WHERE user_id=?")) {
+                    userStatement.setString(1, row.getFirstName());
+                    userStatement.setString(2, row.getLastName());
+                    userStatement.setString(3, row.getEmail());
+                    userStatement.setString(4, row.getAddress());
+                    userStatement.setString(5, row.getPhoneNumber());
+                    if (row.getDateOfBirth() == null) userStatement.setNull(6, Types.DATE); else userStatement.setDate(6, Date.valueOf(row.getDateOfBirth()));
+                    userStatement.setString(7, row.getGender());
+                    userStatement.setString(8, row.getRegistrationNo());
+                    userStatement.executeUpdate();
+                }
 
-            u.setString(1, row.getFirstName());
-            u.setString(2, row.getLastName());
-            u.setString(3, row.getEmail());
-            u.setString(4, row.getAddress());
-            u.setString(5, row.getPhoneNumber());
-            u.setDate(6, row.getDateOfBirth() == null ? null : Date.valueOf(row.getDateOfBirth()));
-            u.setString(7, row.getGender());
-            u.setString(8, row.getRegistrationNo());
-            u.executeUpdate();
+                if (row.getPassword() != null && !row.getPassword().trim().isEmpty()) {
+                    try (PreparedStatement passwordStatement = connection.prepareStatement("UPDATE admin SET password=? WHERE registrationNo=?")) {
+                        passwordStatement.setString(1, PasswordUtil.hashPassword(row.getPassword()));
+                        passwordStatement.setString(2, row.getRegistrationNo());
+                        passwordStatement.executeUpdate();
+                    }
+                }
 
-            // Update password (only if provided)
-            if (row.getPassword() != null && !row.getPassword().isEmpty()) {
-                PreparedStatement a = con.prepareStatement(
-                        "UPDATE admin SET password=? WHERE registrationNo=?");
-
-                a.setString(1, PasswordUtil.hashPassword(row.getPassword()));
-                a.setString(2, row.getRegistrationNo());
-                a.executeUpdate();
+                connection.commit();
+                return true;
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
             }
-
-            return true;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
         }
     }
 
-    // Update Lecturer
     public boolean updateLecturer(UserRecord row) throws SQLException {
-        Connection con = DBConnection.getInstance().getConnection();
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
+            connection.setAutoCommit(false);
 
-        try {
-            // Update users table
-            PreparedStatement u = con.prepareStatement(
-                    "UPDATE users SET firstName=?, lastName=?, email=?, address=?, phoneNumber=?, dateOfBirth=?, gender=? WHERE user_id=?");
+            try {
+                try (PreparedStatement userStatement = connection.prepareStatement("UPDATE users SET firstName=?, lastName=?, email=?, address=?, phoneNumber=?, dateOfBirth=?, gender=? WHERE user_id=?")) {
+                    userStatement.setString(1, row.getFirstName());
+                    userStatement.setString(2, row.getLastName());
+                    userStatement.setString(3, row.getEmail());
+                    userStatement.setString(4, row.getAddress());
+                    userStatement.setString(5, row.getPhoneNumber());
+                    if (row.getDateOfBirth() == null) userStatement.setNull(6, Types.DATE); else userStatement.setDate(6, Date.valueOf(row.getDateOfBirth()));
+                    userStatement.setString(7, row.getGender());
+                    userStatement.setString(8, row.getRegistrationNo());
+                    userStatement.executeUpdate();
+                }
 
-            u.setString(1, row.getFirstName());
-            u.setString(2, row.getLastName());
-            u.setString(3, row.getEmail());
-            u.setString(4, row.getAddress());
-            u.setString(5, row.getPhoneNumber());
-            u.setDate(6, row.getDateOfBirth() == null ? null : Date.valueOf(row.getDateOfBirth()));
-            u.setString(7, row.getGender());
-            u.setString(8, row.getRegistrationNo());
-            u.executeUpdate();
+                try (PreparedStatement lecturerStatement = connection.prepareStatement("UPDATE lecturer SET department=?, position=? WHERE registrationNo=?")) {
+                    lecturerStatement.setString(1, row.getDepartment());
+                    lecturerStatement.setString(2, row.getPosition());
+                    lecturerStatement.setString(3, row.getRegistrationNo());
+                    lecturerStatement.executeUpdate();
+                }
 
-            // Update lecturer table
-            PreparedStatement l = con.prepareStatement(
-                    "UPDATE lecturer SET department=?, position=? WHERE registrationNo=?");
+                if (row.getPassword() != null && !row.getPassword().trim().isEmpty()) {
+                    try (PreparedStatement passwordStatement = connection.prepareStatement("UPDATE lecturer SET password=? WHERE registrationNo=?")) {
+                        passwordStatement.setString(1, PasswordUtil.hashPassword(row.getPassword()));
+                        passwordStatement.setString(2, row.getRegistrationNo());
+                        passwordStatement.executeUpdate();
+                    }
+                }
 
-            l.setString(1, row.getDepartment());
-            l.setString(2, row.getPosition());
-            l.setString(3, row.getRegistrationNo());
-            l.executeUpdate();
-
-            // Optional password update
-            if (row.getPassword() != null && !row.getPassword().isEmpty()) {
-                PreparedStatement p = con.prepareStatement(
-                        "UPDATE lecturer SET password=? WHERE registrationNo=?");
-
-                p.setString(1, PasswordUtil.hashPassword(row.getPassword()));
-                p.setString(2, row.getRegistrationNo());
-                p.executeUpdate();
+                connection.commit();
+                return true;
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
             }
-
-            return true;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
         }
     }
 
-    // Update Student
     public boolean updateStudent(UserRecord row) throws SQLException {
-        Connection con = DBConnection.getInstance().getConnection();
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
+            connection.setAutoCommit(false);
 
-        try {
-            // Update users table
-            PreparedStatement u = con.prepareStatement(
-                    "UPDATE users SET firstName=?, lastName=?, email=?, address=?, phoneNumber=?, dateOfBirth=?, gender=? WHERE user_id=?");
+            try {
+                try (PreparedStatement userStatement = connection.prepareStatement("UPDATE users SET firstName=?, lastName=?, email=?, address=?, phoneNumber=?, dateOfBirth=?, gender=? WHERE user_id=?")) {
+                    userStatement.setString(1, row.getFirstName());
+                    userStatement.setString(2, row.getLastName());
+                    userStatement.setString(3, row.getEmail());
+                    userStatement.setString(4, row.getAddress());
+                    userStatement.setString(5, row.getPhoneNumber());
+                    if (row.getDateOfBirth() == null) userStatement.setNull(6, Types.DATE); else userStatement.setDate(6, Date.valueOf(row.getDateOfBirth()));
+                    userStatement.setString(7, row.getGender());
+                    userStatement.setString(8, row.getRegistrationNo());
+                    userStatement.executeUpdate();
+                }
 
-            u.setString(1, row.getFirstName());
-            u.setString(2, row.getLastName());
-            u.setString(3, row.getEmail());
-            u.setString(4, row.getAddress());
-            u.setString(5, row.getPhoneNumber());
-            u.setDate(6, row.getDateOfBirth() == null ? null : Date.valueOf(row.getDateOfBirth()));
-            u.setString(7, row.getGender());
-            u.setString(8, row.getRegistrationNo());
-            u.executeUpdate();
+                try (PreparedStatement studentStatement = connection.prepareStatement("UPDATE student SET department=?, batch=?, GPA=?, status=? WHERE registrationNo=?")) {
+                    studentStatement.setString(1, row.getDepartment());
+                    studentStatement.setString(2, row.getBatch());
+                    if (row.getGpa() == null) studentStatement.setNull(3, Types.DECIMAL); else studentStatement.setDouble(3, row.getGpa());
+                    studentStatement.setString(4, row.getStatus());
+                    studentStatement.setString(5, row.getRegistrationNo());
+                    studentStatement.executeUpdate();
+                }
 
-            // Update student table
-            PreparedStatement s = con.prepareStatement(
-                    "UPDATE student SET department=?, batch=?, GPA=?, status=? WHERE registrationNo=?");
+                if (row.getPassword() != null && !row.getPassword().trim().isEmpty()) {
+                    try (PreparedStatement passwordStatement = connection.prepareStatement("UPDATE student SET password=? WHERE registrationNo=?")) {
+                        passwordStatement.setString(1, PasswordUtil.hashPassword(row.getPassword()));
+                        passwordStatement.setString(2, row.getRegistrationNo());
+                        passwordStatement.executeUpdate();
+                    }
+                }
 
-            s.setString(1, row.getDepartment());
-            s.setString(2, row.getBatch());
-            s.setDouble(3, row.getGpa() == null ? 0 : row.getGpa());
-            s.setString(4, row.getStatus());
-            s.setString(5, row.getRegistrationNo());
-            s.executeUpdate();
-
-            // Optional password update
-            if (row.getPassword() != null && !row.getPassword().isEmpty()) {
-                PreparedStatement p = con.prepareStatement(
-                        "UPDATE student SET password=? WHERE registrationNo=?");
-
-                p.setString(1, PasswordUtil.hashPassword(row.getPassword()));
-                p.setString(2, row.getRegistrationNo());
-                p.executeUpdate();
+                connection.commit();
+                return true;
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
             }
-
-            return true;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
         }
     }
 
-    // Update Technical Officer
     public boolean updateTechnicalOfficer(UserRecord row) throws SQLException {
-        Connection con = DBConnection.getInstance().getConnection();
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
+            connection.setAutoCommit(false);
 
-        try {
-            // Update users table
-            PreparedStatement u = con.prepareStatement(
-                    "UPDATE users SET firstName=?, lastName=?, email=?, address=?, phoneNumber=?, dateOfBirth=?, gender=? WHERE user_id=?");
+            try {
+                try (PreparedStatement userStatement = connection.prepareStatement("UPDATE users SET firstName=?, lastName=?, email=?, address=?, phoneNumber=?, dateOfBirth=?, gender=? WHERE user_id=?")) {
+                    userStatement.setString(1, row.getFirstName());
+                    userStatement.setString(2, row.getLastName());
+                    userStatement.setString(3, row.getEmail());
+                    userStatement.setString(4, row.getAddress());
+                    userStatement.setString(5, row.getPhoneNumber());
+                    if (row.getDateOfBirth() == null) userStatement.setNull(6, Types.DATE); else userStatement.setDate(6, Date.valueOf(row.getDateOfBirth()));
+                    userStatement.setString(7, row.getGender());
+                    userStatement.setString(8, row.getRegistrationNo());
+                    userStatement.executeUpdate();
+                }
 
-            u.setString(1, row.getFirstName());
-            u.setString(2, row.getLastName());
-            u.setString(3, row.getEmail());
-            u.setString(4, row.getAddress());
-            u.setString(5, row.getPhoneNumber());
-            u.setDate(6, row.getDateOfBirth() == null ? null : Date.valueOf(row.getDateOfBirth()));
-            u.setString(7, row.getGender());
-            u.setString(8, row.getRegistrationNo());
-            u.executeUpdate();
+                try (PreparedStatement technicalOfficerStatement = connection.prepareStatement("UPDATE tech_officer SET department=? WHERE registrationNo=?")) {
+                    technicalOfficerStatement.setString(1, row.getDepartment());
+                    technicalOfficerStatement.setString(2, row.getRegistrationNo());
+                    technicalOfficerStatement.executeUpdate();
+                }
 
-            // Optional password update
-            if (row.getPassword() != null && !row.getPassword().isEmpty()) {
-                PreparedStatement t = con.prepareStatement(
-                        "UPDATE tech_officer SET password=? WHERE registrationNo=?");
+                if (row.getPassword() != null && !row.getPassword().trim().isEmpty()) {
+                    try (PreparedStatement passwordStatement = connection.prepareStatement("UPDATE tech_officer SET password=? WHERE registrationNo=?")) {
+                        passwordStatement.setString(1, PasswordUtil.hashPassword(row.getPassword()));
+                        passwordStatement.setString(2, row.getRegistrationNo());
+                        passwordStatement.executeUpdate();
+                    }
+                }
 
-                t.setString(1, PasswordUtil.hashPassword(row.getPassword()));
-                t.setString(2, row.getRegistrationNo());
-                t.executeUpdate();
+                connection.commit();
+                return true;
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
             }
-
-            return true;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
         }
     }
 
-    // delete Admin
-    public boolean deleteAdmin(String id) throws SQLException {
-        Connection con = DBConnection.getInstance().getConnection();
+    public boolean deleteAdmin(String registrationNo) throws SQLException {
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
+            connection.setAutoCommit(false);
 
-        try {
-            PreparedStatement role = con.prepareStatement(
-                    "DELETE FROM admin WHERE registrationNo=?");
-            role.setString(1, id);
-            role.executeUpdate();
+            try {
+                try (PreparedStatement roleStatement = connection.prepareStatement("DELETE FROM admin WHERE registrationNo=?")) {
+                    roleStatement.setString(1, registrationNo);
+                    roleStatement.executeUpdate();
+                }
 
-            PreparedStatement user = con.prepareStatement(
-                    "DELETE FROM users WHERE user_id=?");
-            user.setString(1, id);
-
-            return user.executeUpdate() > 0;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+                try (PreparedStatement userStatement = connection.prepareStatement("DELETE FROM users WHERE user_id=?")) {
+                    userStatement.setString(1, registrationNo);
+                    boolean deleted = userStatement.executeUpdate() > 0;
+                    connection.commit();
+                    return deleted;
+                }
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+            }
         }
     }
 
-    // delete Lecturer
-    public boolean deleteLecturer(String id) throws SQLException {
-        Connection con = DBConnection.getInstance().getConnection();
+    public boolean deleteLecturer(String registrationNo) throws SQLException {
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
+            connection.setAutoCommit(false);
 
-        try {
-            PreparedStatement role = con.prepareStatement(
-                    "DELETE FROM lecturer WHERE registrationNo=?");
-            role.setString(1, id);
-            role.executeUpdate();
+            try {
+                try (PreparedStatement roleStatement = connection.prepareStatement("DELETE FROM lecturer WHERE registrationNo=?")) {
+                    roleStatement.setString(1, registrationNo);
+                    roleStatement.executeUpdate();
+                }
 
-            PreparedStatement user = con.prepareStatement(
-                    "DELETE FROM users WHERE user_id=?");
-            user.setString(1, id);
-
-            return user.executeUpdate() > 0;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+                try (PreparedStatement userStatement = connection.prepareStatement("DELETE FROM users WHERE user_id=?")) {
+                    userStatement.setString(1, registrationNo);
+                    boolean deleted = userStatement.executeUpdate() > 0;
+                    connection.commit();
+                    return deleted;
+                }
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+            }
         }
     }
 
-    // delete Student
-    public boolean deleteStudent(String id) throws SQLException {
-        Connection con = DBConnection.getInstance().getConnection();
+    public boolean deleteStudent(String registrationNo) throws SQLException {
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
+            connection.setAutoCommit(false);
 
-        try {
-            PreparedStatement role = con.prepareStatement(
-                    "DELETE FROM student WHERE registrationNo=?");
-            role.setString(1, id);
-            role.executeUpdate();
+            try {
+                try (PreparedStatement roleStatement = connection.prepareStatement("DELETE FROM student WHERE registrationNo=?")) {
+                    roleStatement.setString(1, registrationNo);
+                    roleStatement.executeUpdate();
+                }
 
-            PreparedStatement user = con.prepareStatement(
-                    "DELETE FROM users WHERE user_id=?");
-            user.setString(1, id);
-
-            return user.executeUpdate() > 0;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+                try (PreparedStatement userStatement = connection.prepareStatement("DELETE FROM users WHERE user_id=?")) {
+                    userStatement.setString(1, registrationNo);
+                    boolean deleted = userStatement.executeUpdate() > 0;
+                    connection.commit();
+                    return deleted;
+                }
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+            }
         }
     }
 
-    // delete TechnicalOfficer
-    public boolean deleteTechnicalOfficer(String id) throws SQLException {
-        Connection con = DBConnection.getInstance().getConnection();
+    public boolean deleteTechnicalOfficer(String registrationNo) throws SQLException {
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
+            connection.setAutoCommit(false);
 
-        try {
-            PreparedStatement role = con.prepareStatement(
-                    "DELETE FROM tech_officer WHERE registrationNo=?");
-            role.setString(1, id);
-            role.executeUpdate();
+            try {
+                try (PreparedStatement roleStatement = connection.prepareStatement("DELETE FROM tech_officer WHERE registrationNo=?")) {
+                    roleStatement.setString(1, registrationNo);
+                    roleStatement.executeUpdate();
+                }
 
-            PreparedStatement user = con.prepareStatement(
-                    "DELETE FROM users WHERE user_id=?");
-            user.setString(1, id);
+                try (PreparedStatement userStatement = connection.prepareStatement("DELETE FROM users WHERE user_id=?")) {
+                    userStatement.setString(1, registrationNo);
+                    boolean deleted = userStatement.executeUpdate() > 0;
+                    connection.commit();
+                    return deleted;
+                }
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        }
+    }
 
-            return user.executeUpdate() > 0;
+    public UserRecord findStudentProfile(String registrationNo) throws SQLException {
+        String sql = "SELECT u.user_id, u.firstName, u.lastName, u.email, u.address, u.phoneNumber, s.department, s.batch, s.GPA, s.status FROM users u INNER JOIN student s ON u.user_id = s.registrationNo WHERE s.registrationNo = ?";
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+        try (Connection connection = DBConnection.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, registrationNo);
+
+            try (ResultSet rs = statement.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+
+                return new UserRecord(
+                        rs.getString("user_id"),
+                        rs.getString("firstName"),
+                        rs.getString("lastName"),
+                        rs.getString("email"),
+                        rs.getString("address"),
+                        rs.getString("phoneNumber"),
+                        null,
+                        null,
+                        "Student",
+                        rs.getString("user_id"),
+                        null,
+                        rs.getString("department"),
+                        rs.getString("batch"),
+                        rs.getObject("GPA") == null ? null : ((Number) rs.getObject("GPA")).doubleValue(),
+                        rs.getString("status"),
+                        null,
+                        userImageRepository.findImagePathByUserId(connection, registrationNo)
+                );
+            }
+        }
+    }
+
+    public UserRecord findLecturerProfile(String registrationNo) throws SQLException {
+        String sql = "SELECT u.user_id, u.firstName, u.lastName, u.email, u.address, u.phoneNumber, l.department, l.position FROM users u INNER JOIN lecturer l ON u.user_id = l.registrationNo WHERE l.registrationNo = ?";
+
+        try (Connection connection = DBConnection.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, registrationNo);
+
+            try (ResultSet rs = statement.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+
+                return new UserRecord(
+                        rs.getString("user_id"),
+                        rs.getString("firstName"),
+                        rs.getString("lastName"),
+                        rs.getString("email"),
+                        rs.getString("address"),
+                        rs.getString("phoneNumber"),
+                        null,
+                        null,
+                        "Lecturer",
+                        rs.getString("user_id"),
+                        null,
+                        rs.getString("department"),
+                        null,
+                        null,
+                        null,
+                        rs.getString("position"),
+                        userImageRepository.findImagePathByUserId(connection, registrationNo)
+                );
+            }
+        }
+    }
+
+    public UserRecord findTechnicalOfficerProfile(String registrationNo) throws SQLException {
+        String sql = "SELECT u.user_id, u.firstName, u.lastName, u.email, u.address, u.phoneNumber, t.department FROM users u INNER JOIN tech_officer t ON u.user_id = t.registrationNo WHERE t.registrationNo = ?";
+
+        try (Connection connection = DBConnection.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, registrationNo);
+
+            try (ResultSet rs = statement.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+
+                return new UserRecord(
+                        rs.getString("user_id"),
+                        rs.getString("firstName"),
+                        rs.getString("lastName"),
+                        rs.getString("email"),
+                        rs.getString("address"),
+                        rs.getString("phoneNumber"),
+                        null,
+                        null,
+                        "TechnicalOfficer",
+                        rs.getString("user_id"),
+                        null,
+                        rs.getString("department"),
+                        null,
+                        null,
+                        null,
+                        null,
+                        userImageRepository.findImagePathByUserId(connection, registrationNo)
+                );
+            }
+        }
+    }
+
+    public void updateStudentProfile(String registrationNo, String email, String phone, String address, String image, String currentPw, String newPw) throws SQLException {
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
+            connection.setAutoCommit(false);
+
+            try {
+                try (PreparedStatement statement = connection.prepareStatement("UPDATE users SET email=?, phoneNumber=?, address=? WHERE user_id=?")) {
+                    statement.setString(1, email);
+                    statement.setString(2, phone);
+                    statement.setString(3, address);
+                    statement.setString(4, registrationNo);
+                    statement.executeUpdate();
+                }
+
+                if (newPw != null && !newPw.trim().isEmpty()) {
+                    String storedPassword = null;
+
+                    try (PreparedStatement statement = connection.prepareStatement("SELECT password FROM student WHERE registrationNo=?")) {
+                        statement.setString(1, registrationNo);
+                        try (ResultSet rs = statement.executeQuery()) {
+                            if (rs.next()) {
+                                storedPassword = rs.getString("password");
+                            }
+                        }
+                    }
+
+                    if (storedPassword == null || !PasswordUtil.matches(currentPw, storedPassword)) {
+                        throw new IllegalArgumentException("Wrong current password");
+                    }
+
+                    try (PreparedStatement statement = connection.prepareStatement("UPDATE student SET password=? WHERE registrationNo=?")) {
+                        statement.setString(1, PasswordUtil.hashPassword(newPw));
+                        statement.setString(2, registrationNo);
+                        statement.executeUpdate();
+                    }
+                }
+
+                userImageRepository.upsertImagePath(connection, registrationNo, image);
+                connection.commit();
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        }
+    }
+
+    public void updateLecturerProfile(String registrationNo, String firstName, String lastName, String email, String address, String phone, String department, String position, String image) throws SQLException {
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
+            connection.setAutoCommit(false);
+
+            try {
+                try (PreparedStatement userStatement = connection.prepareStatement("UPDATE users SET firstName=?, lastName=?, email=?, address=?, phoneNumber=? WHERE user_id=?")) {
+                    userStatement.setString(1, firstName);
+                    userStatement.setString(2, lastName);
+                    userStatement.setString(3, email);
+                    userStatement.setString(4, address);
+                    userStatement.setString(5, phone);
+                    userStatement.setString(6, registrationNo);
+                    userStatement.executeUpdate();
+                }
+
+                try (PreparedStatement lecturerStatement = connection.prepareStatement("UPDATE lecturer SET department=?, position=? WHERE registrationNo=?")) {
+                    lecturerStatement.setString(1, department);
+                    lecturerStatement.setString(2, position);
+                    lecturerStatement.setString(3, registrationNo);
+                    lecturerStatement.executeUpdate();
+                }
+
+                userImageRepository.upsertImagePath(connection, registrationNo, image);
+                connection.commit();
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        }
+    }
+
+    public void updateTechnicalOfficerProfile(String registrationNo, String firstName, String lastName, String email, String phone, String address, String image) throws SQLException {
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
+            connection.setAutoCommit(false);
+
+            try {
+                try (PreparedStatement statement = connection.prepareStatement("UPDATE users SET firstName=?, lastName=?, email=?, phoneNumber=?, address=? WHERE user_id=?")) {
+                    statement.setString(1, firstName);
+                    statement.setString(2, lastName);
+                    statement.setString(3, email);
+                    statement.setString(4, phone);
+                    statement.setString(5, address);
+                    statement.setString(6, registrationNo);
+                    statement.executeUpdate();
+                }
+
+                userImageRepository.upsertImagePath(connection, registrationNo, image);
+                connection.commit();
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+            }
         }
     }
 }
